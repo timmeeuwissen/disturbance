@@ -1,0 +1,54 @@
+export interface Issue {
+  id: number
+  title: string
+  description?: string
+  reporter: string
+  registrar: string
+  severity: 'critical' | 'high' | 'medium' | 'low'
+  status: 'open' | 'investigating' | 'mitigated' | 'resolved' | 'closed'
+  topic: string
+  startTimestamp: string
+  reportTimestamp: string
+  resolutionTimestamp?: string
+  mitigationSteps?: string
+  createdAt: string
+  updatedAt: string
+  references?: Reference[]
+  impactedSystems?: ImpactedSystem[]
+  involvedTeams?: InvolvedTeam[]
+}
+
+export interface Reference {
+  id: number
+  issueId: number
+  url: string
+  referenceType: 'jira' | 'slack' | 'system' | 'other'
+  description?: string
+}
+
+export interface ImpactedSystem {
+  id: number
+  issueId: number
+  systemName: string
+  impactDescription?: string
+}
+
+export interface InvolvedTeam {
+  id: number
+  issueId: number
+  teamName: string
+  role?: string
+}
+
+export interface IssueFilters {
+  search: string
+  status: string
+  severity: string
+  timeRange: 'all' | 'today' | 'week' | 'month' | 'quarter'
+}
+
+export interface ExportOptions {
+  format: 'csv' | 'json'
+  template: 'full' | 'summary' | 'metrics'
+  filters: IssueFilters
+}
