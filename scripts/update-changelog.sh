@@ -13,9 +13,13 @@ fi
 # Get the current date
 DATE=$(date +"%Y-%m-%d")
 
-# Get the change description
-echo "Enter change description:"
-read description
+# Get the change description from command line argument or prompt
+if [ -n "$1" ]; then
+    description="$1"
+else
+    echo "Enter change description:"
+    read description
+fi
 
 # Add new entry to changelog
 sed -i '' "4i\\
