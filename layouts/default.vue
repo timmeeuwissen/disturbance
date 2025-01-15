@@ -32,14 +32,14 @@ import { useRoute } from '#app'
 const activeTab = ref(0)
 
 // Global snackbar state
-export const snackbar = reactive({
+const snackbar = reactive({
   show: false,
   text: '',
   color: 'success'
 })
 
 // Show snackbar message
-export const showMessage = (text: string, color: 'success' | 'error' = 'success') => {
+const showMessage = (text: string, color: 'success' | 'error' = 'success') => {
   snackbar.text = text
   snackbar.color = color
   snackbar.show = true

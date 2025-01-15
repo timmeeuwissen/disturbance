@@ -1,3 +1,9 @@
+<script lang="ts">
+definePageMeta({
+  ssr: false
+})
+</script>
+
 <template lang="pug">
 v-card
   v-card-title New Issue
