@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 ## [2025-01-15]
 
+- Updated Vite configuration to show error overlay and improve logging
+
+## [2025-01-15]
+
 - Updated git-commit.sh and update-changelog.sh to accept command line arguments
 
 ## [2025-01-15]
