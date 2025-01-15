@@ -30,11 +30,7 @@ export default defineNuxtConfig({
     }
   },
 
-  vue: {
-    compilerOptions: {
-      isCustomElement: (tag) => tag.startsWith('v-')
-    }
-  },
+  ssr: false,
 
   app: {
     head: {
