@@ -20,6 +20,13 @@ export default defineNuxtConfig({
     },
     ssr: {
       noExternal: ['vuetify']
+    },
+    clearScreen: false,
+    logLevel: 'info',
+    server: {
+      hmr: {
+        overlay: true
+      }
     }
   },
 
