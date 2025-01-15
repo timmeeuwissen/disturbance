@@ -9,9 +9,13 @@ fi
 # Add all changes
 git add .
 
-# Get the commit message
-echo "Enter commit message:"
-read message
+# Get the commit message from command line argument or prompt
+if [ -n "$1" ]; then
+    message="$1"
+else
+    echo "Enter commit message:"
+    read message
+fi
 
 # Commit with message
 git commit -m "$message"

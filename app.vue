@@ -1,6 +1,8 @@
-<template>
-  <div>
-    <NuxtRouteAnnouncer />
-    <NuxtWelcome />
-  </div>
+<template lang="pug">
+NuxtLayout
+  NuxtPage
 </template>
+
+<script setup lang="ts">
+// Root component
+</script>

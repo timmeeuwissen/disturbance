@@ -1,4 +1,4 @@
-import { Database } from 'better-sqlite3'
+import Database from 'better-sqlite3'
 import { resolve } from 'path'
 import type { Issue, Reference, ImpactedSystem, InvolvedTeam } from '~/types'
 
@@ -98,17 +98,17 @@ const statements = {
 
 export const dbService = {
   getAllIssues(): Issue[] {
-    return statements.getAllIssues.all()
+    return statements.getAllIssues.all() as Issue[]
   },
   
   getIssueById(id: number): Issue | undefined {
-    const issue = statements.getIssueById.get(id)
+    const issue = statements.getIssueById.get(id) as Issue | undefined
     if (!issue) return undefined
     
     // Get related data
-    const references = statements.getIssueReferences.all(id)
-    const impactedSystems = statements.getIssueImpactedSystems.all(id)
-    const involvedTeams = statements.getIssueInvolvedTeams.all(id)
+    const references = statements.getIssueReferences.all(id) as Reference[]
+    const impactedSystems = statements.getIssueImpactedSystems.all(id) as ImpactedSystem[]
+    const involvedTeams = statements.getIssueInvolvedTeams.all(id) as InvolvedTeam[]
     
     return {
       ...issue,
