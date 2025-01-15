@@ -1,121 +1,143 @@
 <template lang="pug">
-.card
-  .card-header
-    .sm:flex.sm:items-center
-      .sm:flex-auto
-        h1.text-xl.font-semibold.text-gray-900 Issues Overview
-      .mt-4.sm:mt-0.sm:ml-16.sm:flex-none
-        button.btn-primary(@click="exportData") Export Data
+v-card
+  v-card-title.d-flex.align-center
+    span Issues Overview
+    v-spacer
+    v-btn(
+      color="primary"
+      prepend-icon="mdi-download"
+      @click="showExportDialog = true"
+    ) Export Data
   
-  .card-body
+  v-card-text
     // Filters
-    .grid.grid-cols-1.gap-4.sm:grid-cols-4.mb-6
-      .form-group
-        input.form-input(
-          type="text"
-          placeholder="Search..."
+    v-row
+      v-col(cols="12" sm="3")
+        v-text-field(
           v-model="filters.search"
+          label="Search"
+          prepend-inner-icon="mdi-magnify"
+          hide-details
+          density="compact"
         )
       
-      .form-group
-        select.form-input(v-model="filters.status")
-          option(value="") All Statuses
-          option(value="open") Open
-          option(value="investigating") Investigating
-          option(value="mitigated") Mitigated
-          option(value="resolved") Resolved
-          option(value="closed") Closed
+      v-col(cols="12" sm="3")
+        v-select(
+          v-model="filters.status"
+          label="Status"
+          :items="['', 'open', 'investigating', 'mitigated', 'resolved', 'closed']"
+          :item-title="item => item || 'All Statuses'"
+          hide-details
+          density="compact"
+        )
       
-      .form-group
-        select.form-input(v-model="filters.severity")
-          option(value="") All Severities
-          option(value="critical") Critical
-          option(value="high") High
-          option(value="medium") Medium
-          option(value="low") Low
+      v-col(cols="12" sm="3")
+        v-select(
+          v-model="filters.severity"
+          label="Severity"
+          :items="['', 'critical', 'high', 'medium', 'low']"
+          :item-title="item => item || 'All Severities'"
+          hide-details
+          density="compact"
+        )
       
-      .form-group
-        select.form-input(v-model="filters.timeRange")
-          option(value="all") All Time
-          option(value="today") Today
-          option(value="week") This Week
-          option(value="month") This Month
-          option(value="quarter") This Quarter
+      v-col(cols="12" sm="3")
+        v-select(
+          v-model="filters.timeRange"
+          label="Time Range"
+          :items="[
+            { value: 'all', title: 'All Time' },
+            { value: 'today', title: 'Today' },
+            { value: 'week', title: 'This Week' },
+            { value: 'month', title: 'This Month' },
+            { value: 'quarter', title: 'This Quarter' }
+          ]"
+          item-title="title"
+          item-value="value"
+          hide-details
+          density="compact"
+        )
     
     // Table
-    .table-container
-      .table-inner
-        table.table
-          thead.table-header
-            tr
-              th.table-header-cell ID
-              th.table-header-cell Status
-              th.table-header-cell Title
-              th.table-header-cell Severity
-              th.table-header-cell Started
-              th.table-header-cell Time to Report
-              th.table-header-cell Time to Resolve
-              th.table-header-cell Actions
-          
-          tbody.table-body
-            tr.table-row(v-for="issue in paginatedIssues" :key="issue.id")
-              td.table-cell {{ issue.id }}
-              td.table-cell
-                span(:class="getStatusClass(issue.status)") {{ issue.status }}
-              td.table-cell {{ issue.title }}
-              td.table-cell
-                span(:class="getSeverityClass(issue.severity)") {{ issue.severity }}
-              td.table-cell {{ formatDate(issue.startTimestamp) }}
-              td.table-cell {{ getTimeToReport(issue) }}
-              td.table-cell {{ getTimeToResolve(issue) }}
-              td.table-cell
-                .flex.space-x-2
-                  button.btn-secondary(@click="editIssue(issue)") Edit
-                  button.btn-secondary(@click="viewDetails(issue)") View
-    
-    // Pagination
-    .mt-6.flex.items-center.justify-between
-      .flex-1.flex.justify-between.sm:hidden
-        button.btn-secondary(:disabled="currentPage === 1" @click="currentPage--") Previous
-        button.btn-secondary(:disabled="currentPage === totalPages" @click="currentPage++") Next
+    v-data-table(
+      :headers="headers"
+      :items="filteredIssues"
+      :items-per-page="itemsPerPage"
+      :page="currentPage"
+      @update:page="currentPage = $event"
+      @update:items-per-page="itemsPerPage = $event"
+    )
+      template(#item.status="{ item }")
+        span(:class="getStatusClass(item.raw.status)") {{ item.raw.status }}
       
-      .hidden.sm:flex-1.sm:flex.sm:items-center.sm:justify-between
-        .flex.items-center
-          p.text-sm.text-gray-700
-            | Showing 
-            span.font-medium {{ paginationStart + 1 }}
-            |  to 
-            span.font-medium {{ paginationEnd }}
-            |  of 
-            span.font-medium {{ totalIssues }}
-            |  results
-        
-        nav.relative.z-0.inline-flex.-space-x-px
-          button.btn-secondary.rounded-l-md(:disabled="currentPage === 1" @click="currentPage--") Previous
-          button.btn-secondary.rounded-r-md(:disabled="currentPage === totalPages" @click="currentPage++") Next
+      template(#item.severity="{ item }")
+        span(:class="getSeverityClass(item.raw.severity)") {{ item.raw.severity }}
+      
+      template(#item.startTimestamp="{ item }")
+        | {{ formatDate(item.raw.startTimestamp) }}
+      
+      template(#item.timeToReport="{ item }")
+        | {{ getTimeToReport(item.raw) }}
+      
+      template(#item.timeToResolve="{ item }")
+        | {{ getTimeToResolve(item.raw) }}
+      
+      template(#item.actions="{ item }")
+        v-btn(
+          icon="mdi-pencil"
+          variant="text"
+          size="small"
+          color="primary"
+          @click="editIssue(item.raw)"
+        )
+        v-btn(
+          icon="mdi-eye"
+          variant="text"
+          size="small"
+          color="primary"
+          @click="viewDetails(item.raw)"
+        )
 
-  // Export Modal
-  Teleport(to="body")
-    .fixed.inset-0.bg-gray-500.bg-opacity-75.flex.items-center.justify-center(v-if="showExportModal")
-      .bg-white.rounded-lg.p-6.max-w-lg.w-full
-        h3.text-lg.font-medium.mb-4 Export Issues
-        .space-y-4
-          .form-group
-            label.form-label(for="exportFormat") Format
-            select#exportFormat.form-input(v-model="exportFormat")
-              option(value="csv") CSV
-              option(value="json") JSON
-          
-          .form-group
-            label.form-label(for="exportTemplate") Template
-            select#exportTemplate.form-input(v-model="exportTemplate")
-              option(value="full") Full Details
-              option(value="summary") Summary
-              option(value="metrics") Metrics Only
-          
-          .flex.justify-end.space-x-3.mt-6
-            button.btn-secondary(@click="showExportModal = false") Cancel
-            button.btn-primary(@click="confirmExport") Export
+  // Export Dialog
+  v-dialog(v-model="showExportDialog" max-width="500px")
+    v-card
+      v-card-title Export Issues
+      v-card-text
+        v-form(ref="exportForm")
+          v-select(
+            v-model="exportFormat"
+            label="Format"
+            :items="[
+              { value: 'csv', title: 'CSV' },
+              { value: 'json', title: 'JSON' }
+            ]"
+            item-title="title"
+            item-value="value"
+            required
+          )
+          v-select(
+            v-model="exportTemplate"
+            label="Template"
+            :items="[
+              { value: 'full', title: 'Full Details' },
+              { value: 'summary', title: 'Summary' },
+              { value: 'metrics', title: 'Metrics Only' }
+            ]"
+            item-title="title"
+            item-value="value"
+            required
+          )
+      v-card-actions
+        v-spacer
+        v-btn(
+          color="secondary"
+          variant="text"
+          @click="showExportDialog = false"
+        ) Cancel
+        v-btn(
+          color="primary"
+          @click="confirmExport"
+        ) Export
 </template>
 
 <script setup lang="ts">
@@ -126,13 +148,26 @@ import type { Issue, IssueFilters, ExportOptions } from '~/types'
 
 dayjs.extend(relativeTime)
 
+// Table headers
+const headers = [
+  { title: 'ID', key: 'id', sortable: true },
+  { title: 'Status', key: 'status', sortable: true },
+  { title: 'Title', key: 'title', sortable: true },
+  { title: 'Severity', key: 'severity', sortable: true },
+  { title: 'Started', key: 'startTimestamp', sortable: true },
+  { title: 'Time to Report', key: 'timeToReport' },
+  { title: 'Time to Resolve', key: 'timeToResolve' },
+  { title: 'Actions', key: 'actions', sortable: false }
+]
+
 // State
 const issues = ref<Issue[]>([])
 const currentPage = ref(1)
-const itemsPerPage = 10
-const showExportModal = ref(false)
+const itemsPerPage = ref(10)
+const showExportDialog = ref(false)
 const exportFormat = ref('csv')
 const exportTemplate = ref('full')
+const exportForm = ref<any>(null)
 
 const filters = ref<IssueFilters>({
   search: '',
@@ -173,16 +208,6 @@ const filteredIssues = computed(() => {
   })
 })
 
-const totalIssues = computed(() => filteredIssues.value.length)
-const totalPages = computed(() => Math.ceil(totalIssues.value / itemsPerPage))
-
-const paginationStart = computed(() => (currentPage.value - 1) * itemsPerPage)
-const paginationEnd = computed(() => Math.min(paginationStart.value + itemsPerPage, totalIssues.value))
-
-const paginatedIssues = computed(() => {
-  return filteredIssues.value.slice(paginationStart.value, paginationEnd.value)
-})
-
 // Methods
 const getStatusClass = (status: string) => {
   return `status-${status.toLowerCase()}`
@@ -196,34 +221,34 @@ const formatDate = (date: string) => {
   return dayjs(date).format('YYYY-MM-DD HH:mm')
 }
 
-const getTimeToReport = (issue: any) => {
+const getTimeToReport = (issue: Issue) => {
   const start = dayjs(issue.startTimestamp)
   const report = dayjs(issue.reportTimestamp)
   return report.from(start, true)
 }
 
-const getTimeToResolve = (issue: any) => {
+const getTimeToResolve = (issue: Issue) => {
   if (!issue.resolutionTimestamp) return 'Unresolved'
   const start = dayjs(issue.startTimestamp)
   const resolution = dayjs(issue.resolutionTimestamp)
   return resolution.from(start, true)
 }
 
-const editIssue = (issue: any) => {
-  // Navigate to edit page
+const editIssue = (issue: Issue) => {
   navigateTo(`/issues/${issue.id}/edit`)
 }
 
-const viewDetails = (issue: any) => {
-  // Navigate to details page
+const viewDetails = (issue: Issue) => {
   navigateTo(`/issues/${issue.id}`)
 }
 
-const exportData = () => {
-  showExportModal.value = true
-}
-
 const confirmExport = async () => {
+  const { valid } = await exportForm.value?.validate()
+  
+  if (!valid) {
+    return
+  }
+
   try {
     const response = await $fetch<string>('/api/issues/export', {
       method: 'POST',
@@ -242,10 +267,11 @@ const confirmExport = async () => {
     a.download = `issues-export-${dayjs().format('YYYY-MM-DD')}.${exportFormat.value}`
     a.click()
     
-    showExportModal.value = false
+    showExportDialog.value = false
   } catch (error) {
     console.error('Error exporting data:', error)
-    alert('Error exporting data. Please try again.')
+    const showMessage = inject<(text: string, color?: 'success' | 'error') => void>('showMessage')
+    showMessage?.('Failed to export data. Please try again.', 'error')
   }
 }
 
@@ -256,7 +282,8 @@ onMounted(async () => {
     issues.value = response
   } catch (error) {
     console.error('Error fetching issues:', error)
-    alert('Error loading issues. Please try again.')
+    const showMessage = inject<(text: string, color?: 'success' | 'error') => void>('showMessage')
+    showMessage?.('Error loading issues. Please try again.', 'error')
   }
 })
 </script>

@@ -1,226 +1,239 @@
 <template lang="pug">
-.card
-  .card-header
-    h1.text-xl.font-semibold.text-gray-900 New Issue
+v-card
+  v-card-title New Issue
   
-  form.card-body(@submit.prevent="submitIssue")
-    // Basic Information
-    .form-group
-      label.form-label(for="title") Title
-      input#title.form-input(
-        type="text"
-        v-model="issue.title"
-        required
-        placeholder="Brief description of the issue"
-      )
+  v-card-text
+    v-form(@submit.prevent="submitIssue" ref="form")
+      v-container
+        // Basic Information
+        v-row
+          v-col(cols="12")
+            v-text-field(
+              v-model="issue.title"
+              label="Title"
+              required
+              placeholder="Brief description of the issue"
+              :rules="[v => !!v || 'Title is required']"
+            )
 
-    .grid.grid-cols-1.gap-4.sm:grid-cols-2
-      .form-group
-        label.form-label(for="reporter") Reporter
-        input#reporter.form-input(
-          type="text"
-          v-model="issue.reporter"
-          required
-          placeholder="Who reported the issue"
-        )
-      
-      .form-group
-        label.form-label(for="registrar") Registrar
-        input#registrar.form-input(
-          type="text"
-          v-model="issue.registrar"
-          required
-          placeholder="Who is registering the issue"
-        )
+        v-row
+          v-col(cols="12" sm="6")
+            v-text-field(
+              v-model="issue.reporter"
+              label="Reporter"
+              required
+              placeholder="Who reported the issue"
+              :rules="[v => !!v || 'Reporter is required']"
+            )
+          
+          v-col(cols="12" sm="6")
+            v-text-field(
+              v-model="issue.registrar"
+              label="Registrar"
+              required
+              placeholder="Who is registering the issue"
+              :rules="[v => !!v || 'Registrar is required']"
+            )
 
-    .grid.grid-cols-1.gap-4.sm:grid-cols-3
-      .form-group
-        label.form-label(for="severity") Severity
-        select#severity.form-input(v-model="issue.severity" required)
-          option(value="") Select severity
-          option(value="critical") Critical
-          option(value="high") High
-          option(value="medium") Medium
-          option(value="low") Low
+        v-row
+          v-col(cols="12" sm="4")
+            v-select(
+              v-model="issue.severity"
+              label="Severity"
+              required
+              :items="['critical', 'high', 'medium', 'low']"
+              :rules="[v => !!v || 'Severity is required']"
+            )
 
-      .form-group
-        label.form-label(for="status") Status
-        select#status.form-input(v-model="issue.status" required)
-          option(value="") Select status
-          option(value="open") Open
-          option(value="investigating") Investigating
-          option(value="mitigated") Mitigated
-          option(value="resolved") Resolved
-          option(value="closed") Closed
+          v-col(cols="12" sm="4")
+            v-select(
+              v-model="issue.status"
+              label="Status"
+              required
+              :items="['open', 'investigating', 'mitigated', 'resolved', 'closed']"
+              :rules="[v => !!v || 'Status is required']"
+            )
 
-      .form-group
-        label.form-label(for="topic") Topic
-        input#topic.form-input(
-          type="text"
-          v-model="issue.topic"
-          required
-          placeholder="Issue category/topic"
-        )
+          v-col(cols="12" sm="4")
+            v-text-field(
+              v-model="issue.topic"
+              label="Topic"
+              required
+              placeholder="Issue category/topic"
+              :rules="[v => !!v || 'Topic is required']"
+            )
 
-    .grid.grid-cols-1.gap-4.sm:grid-cols-3
-      .form-group
-        label.form-label(for="startTime") Start Time
-        input#startTime.form-input(
-          type="datetime-local"
-          v-model="issue.startTimestamp"
-          required
-        )
+        v-row
+          v-col(cols="12" sm="4")
+            v-text-field(
+              v-model="issue.startTimestamp"
+              label="Start Time"
+              type="datetime-local"
+              required
+              :rules="[v => !!v || 'Start time is required']"
+            )
 
-      .form-group
-        label.form-label(for="reportTime") Report Time
-        input#reportTime.form-input(
-          type="datetime-local"
-          v-model="issue.reportTimestamp"
-          required
-        )
+          v-col(cols="12" sm="4")
+            v-text-field(
+              v-model="issue.reportTimestamp"
+              label="Report Time"
+              type="datetime-local"
+              required
+              :rules="[v => !!v || 'Report time is required']"
+            )
 
-      .form-group
-        label.form-label(for="resolutionTime") Resolution Time
-        input#resolutionTime.form-input(
-          type="datetime-local"
-          v-model="issue.resolutionTimestamp"
-        )
+          v-col(cols="12" sm="4")
+            v-text-field(
+              v-model="issue.resolutionTimestamp"
+              label="Resolution Time"
+              type="datetime-local"
+            )
 
-    .form-group
-      label.form-label(for="description") Description
-      textarea#description.form-input(
-        rows="3"
-        v-model="issue.description"
-        placeholder="Detailed description of the issue"
-      )
+        v-row
+          v-col(cols="12")
+            v-textarea(
+              v-model="issue.description"
+              label="Description"
+              placeholder="Detailed description of the issue"
+              rows="3"
+            )
 
-    .form-group
-      label.form-label(for="mitigation") Mitigation Steps
-      textarea#mitigation.form-input(
-        rows="3"
-        v-model="issue.mitigationSteps"
-        placeholder="Steps taken to mitigate the issue"
-      )
+          v-col(cols="12")
+            v-textarea(
+              v-model="issue.mitigationSteps"
+              label="Mitigation Steps"
+              placeholder="Steps taken to mitigate the issue"
+              rows="3"
+            )
 
-    // References Section
-    .form-group
-      label.form-label References (Jira, Slack, etc.)
-      .space-y-2
-        .flex.items-center.space-x-2(v-for="(ref, index) in references" :key="index")
-          input.form-input.flex-1(
-            type="url"
-            v-model="ref.url"
-            placeholder="URL"
-          )
-          select.form-input.w-32(v-model="ref.referenceType")
-            option(value="jira") Jira
-            option(value="slack") Slack
-            option(value="system") System
-            option(value="other") Other
-          button.btn-danger(
-            type="button"
-            @click="removeReference(index)"
-          ) Remove
-        button.btn-secondary(
-          type="button"
-          @click="addReference"
-        ) Add Reference
+        // References Section
+        v-row
+          v-col(cols="12")
+            v-card(variant="outlined")
+              v-card-title References (Jira, Slack, etc.)
+              v-card-text
+                v-row(v-for="(ref, index) in references" :key="index")
+                  v-col(cols="12" sm="6")
+                    v-text-field(
+                      v-model="ref.url"
+                      label="URL"
+                      type="url"
+                      placeholder="URL"
+                    )
+                  v-col(cols="12" sm="4")
+                    v-select(
+                      v-model="ref.referenceType"
+                      label="Type"
+                      :items="['jira', 'slack', 'system', 'other']"
+                    )
+                  v-col(cols="12" sm="2")
+                    v-btn(
+                      color="error"
+                      variant="outlined"
+                      @click="removeReference(index)"
+                      block
+                    ) Remove
+                v-btn(
+                  color="primary"
+                  variant="outlined"
+                  @click="addReference"
+                  class="mt-2"
+                  block
+                ) Add Reference
 
-    // Impacted Systems Section
-    .form-group
-      label.form-label Impacted Systems
-      .space-y-2
-        .flex.items-center.space-x-2(v-for="(system, index) in impactedSystems" :key="index")
-          input.form-input.flex-1(
-            type="text"
-            v-model="system.systemName"
-            placeholder="System name"
-          )
-          input.form-input.flex-1(
-            type="text"
-            v-model="system.impactDescription"
-            placeholder="Impact description"
-          )
-          button.btn-danger(
-            type="button"
-            @click="removeSystem(index)"
-          ) Remove
-        button.btn-secondary(
-          type="button"
-          @click="addSystem"
-        ) Add System
+        // Impacted Systems Section
+        v-row
+          v-col(cols="12")
+            v-card(variant="outlined")
+              v-card-title Impacted Systems
+              v-card-text
+                v-row(v-for="(system, index) in impactedSystems" :key="index")
+                  v-col(cols="12" sm="5")
+                    v-text-field(
+                      v-model="system.systemName"
+                      label="System Name"
+                      placeholder="System name"
+                    )
+                  v-col(cols="12" sm="5")
+                    v-text-field(
+                      v-model="system.impactDescription"
+                      label="Impact Description"
+                      placeholder="Impact description"
+                    )
+                  v-col(cols="12" sm="2")
+                    v-btn(
+                      color="error"
+                      variant="outlined"
+                      @click="removeSystem(index)"
+                      block
+                    ) Remove
+                v-btn(
+                  color="primary"
+                  variant="outlined"
+                  @click="addSystem"
+                  class="mt-2"
+                  block
+                ) Add System
 
-    // Involved Teams Section
-    .form-group
-      label.form-label Involved Teams
-      .space-y-2
-        .flex.items-center.space-x-2(v-for="(team, index) in involvedTeams" :key="index")
-          input.form-input.flex-1(
-            type="text"
-            v-model="team.teamName"
-            placeholder="Team name"
-          )
-          input.form-input.flex-1(
-            type="text"
-            v-model="team.role"
-            placeholder="Team's role"
-          )
-          button.btn-danger(
-            type="button"
-            @click="removeTeam(index)"
-          ) Remove
-        button.btn-secondary(
-          type="button"
-          @click="addTeam"
-        ) Add Team
+        // Involved Teams Section
+        v-row
+          v-col(cols="12")
+            v-card(variant="outlined")
+              v-card-title Involved Teams
+              v-card-text
+                v-row(v-for="(team, index) in involvedTeams" :key="index")
+                  v-col(cols="12" sm="5")
+                    v-text-field(
+                      v-model="team.teamName"
+                      label="Team Name"
+                      placeholder="Team name"
+                    )
+                  v-col(cols="12" sm="5")
+                    v-text-field(
+                      v-model="team.role"
+                      label="Role"
+                      placeholder="Team's role"
+                    )
+                  v-col(cols="12" sm="2")
+                    v-btn(
+                      color="error"
+                      variant="outlined"
+                      @click="removeTeam(index)"
+                      block
+                    ) Remove
+                v-btn(
+                  color="primary"
+                  variant="outlined"
+                  @click="addTeam"
+                  class="mt-2"
+                  block
+                ) Add Team
 
-    .flex.justify-end.space-x-3
-      button.btn-secondary(
-        type="button"
-        @click="resetForm"
-      ) Reset
-      button.btn-primary(
-        type="submit"
-      ) Create Issue
+  v-card-actions
+    v-spacer
+    v-btn(
+      color="secondary"
+      variant="outlined"
+      @click="resetForm"
+    ) Reset
+    v-btn(
+      color="primary"
+      @click="submitIssue"
+    ) Create Issue
 </template>
 
 <script setup lang="ts">
-interface Issue {
-  title: string
-  description: string
-  reporter: string
-  registrar: string
-  severity: string
-  status: string
-  topic: string
-  startTimestamp: string
-  reportTimestamp: string
-  resolutionTimestamp: string
-  mitigationSteps: string
-}
+import type { Issue, Reference, ImpactedSystem, InvolvedTeam } from '~/types'
 
-interface Reference {
-  url: string
-  referenceType: string
-}
+const form = ref<any>(null)
 
-interface System {
-  systemName: string
-  impactDescription: string
-}
-
-interface Team {
-  teamName: string
-  role: string
-}
-
-const issue = ref<Issue>({
+const issue = ref<Omit<Issue, 'id' | 'createdAt' | 'updatedAt'>>({
   title: '',
   description: '',
   reporter: '',
   registrar: '',
-  severity: '',
-  status: '',
+  severity: null as unknown as 'critical' | 'high' | 'medium' | 'low',
+  status: null as unknown as 'open' | 'investigating' | 'mitigated' | 'resolved' | 'closed',
   topic: '',
   startTimestamp: '',
   reportTimestamp: '',
@@ -228,9 +241,9 @@ const issue = ref<Issue>({
   mitigationSteps: ''
 })
 
-const references = ref<Reference[]>([])
-const impactedSystems = ref<System[]>([])
-const involvedTeams = ref<Team[]>([])
+const references = ref<Omit<Reference, 'id' | 'issueId'>[]>([])
+const impactedSystems = ref<Omit<ImpactedSystem, 'id' | 'issueId'>[]>([])
+const involvedTeams = ref<Omit<InvolvedTeam, 'id' | 'issueId'>[]>([])
 
 const addReference = () => {
   references.value.push({ url: '', referenceType: 'jira' })
@@ -257,25 +270,19 @@ const removeTeam = (index: number) => {
 }
 
 const resetForm = () => {
-  issue.value = {
-    title: '',
-    description: '',
-    reporter: '',
-    registrar: '',
-    severity: '',
-    status: '',
-    topic: '',
-    startTimestamp: '',
-    reportTimestamp: '',
-    resolutionTimestamp: '',
-    mitigationSteps: ''
-  }
+  form.value?.reset()
   references.value = []
   impactedSystems.value = []
   involvedTeams.value = []
 }
 
 const submitIssue = async () => {
+  const { valid } = await form.value?.validate()
+  
+  if (!valid) {
+    return
+  }
+
   try {
     const response = await $fetch('/api/issues', {
       method: 'POST',
@@ -287,12 +294,13 @@ const submitIssue = async () => {
       }
     })
     
-    // Show success message
-    alert('Issue created successfully')
+    const showMessage = inject<(text: string, color?: 'success' | 'error') => void>('showMessage')
+    showMessage?.('Issue created successfully')
     resetForm()
   } catch (error) {
     console.error('Error creating issue:', error)
-    alert('Error creating issue. Please try again.')
+    const showMessage = inject<(text: string, color?: 'success' | 'error') => void>('showMessage')
+    showMessage?.('Failed to create issue. Please try again.', 'error')
   }
 }
 </script>

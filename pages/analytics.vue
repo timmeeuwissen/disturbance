@@ -1,119 +1,128 @@
 <template lang="pug">
-.space-y-6
+div
   // Summary Cards
-  .grid.grid-cols-1.gap-6.sm:grid-cols-2.lg:grid-cols-4
-    .stat-card
-      .stat-title Open Issues
-      .stat-value {{ stats.openIssues }}
+  v-row
+    v-col(cols="12" sm="6" lg="3")
+      v-card
+        v-card-text
+          .text-subtitle-2 Open Issues
+          .text-h4.mt-2 {{ stats.openIssues }}
     
-    .stat-card
-      .stat-title Mean Time to Report
-      .stat-value {{ formatDuration(stats.meanTimeToReport) }}
+    v-col(cols="12" sm="6" lg="3")
+      v-card
+        v-card-text
+          .text-subtitle-2 Mean Time to Report
+          .text-h4.mt-2 {{ formatDuration(stats.meanTimeToReport) }}
     
-    .stat-card
-      .stat-title Mean Time to Resolve
-      .stat-value {{ formatDuration(stats.meanTimeToResolve) }}
+    v-col(cols="12" sm="6" lg="3")
+      v-card
+        v-card-text
+          .text-subtitle-2 Mean Time to Resolve
+          .text-h4.mt-2 {{ formatDuration(stats.meanTimeToResolve) }}
     
-    .stat-card
-      .stat-title Resolution Rate
-      .stat-value {{ stats.resolutionRate }}%
+    v-col(cols="12" sm="6" lg="3")
+      v-card
+        v-card-text
+          .text-subtitle-2 Resolution Rate
+          .text-h4.mt-2 {{ stats.resolutionRate }}%
 
   // Filters
-  .card
-    .card-body
-      .grid.grid-cols-1.gap-4.sm:grid-cols-3
-        .form-group
-          label.form-label(for="period") Time Period
-          select#period.form-input(v-model="filters.period")
-            option(value="7d") Last 7 Days
-            option(value="30d") Last 30 Days
-            option(value="90d") Last 90 Days
-            option(value="1y") Last Year
-            option(value="all") All Time
+  v-card.mt-6
+    v-card-text
+      v-row
+        v-col(cols="12" sm="4")
+          v-select(
+            v-model="filters.period"
+            label="Time Period"
+            :items="[
+              { value: '7d', title: 'Last 7 Days' },
+              { value: '30d', title: 'Last 30 Days' },
+              { value: '90d', title: 'Last 90 Days' },
+              { value: '1y', title: 'Last Year' },
+              { value: 'all', title: 'All Time' }
+            ]"
+            item-title="title"
+            item-value="value"
+          )
         
-        .form-group
-          label.form-label(for="topic") Topic
-          select#topic.form-input(v-model="filters.topic")
-            option(value="") All Topics
-            option(v-for="topic in topics" :key="topic" :value="topic") {{ topic }}
+        v-col(cols="12" sm="4")
+          v-select(
+            v-model="filters.topic"
+            label="Topic"
+            :items="['', ...topics]"
+            :item-title="item => item || 'All Topics'"
+          )
         
-        .form-group
-          label.form-label(for="severity") Severity
-          select#severity.form-input(v-model="filters.severity")
-            option(value="") All Severities
-            option(value="critical") Critical
-            option(value="high") High
-            option(value="medium") Medium
-            option(value="low") Low
+        v-col(cols="12" sm="4")
+          v-select(
+            v-model="filters.severity"
+            label="Severity"
+            :items="['', 'critical', 'high', 'medium', 'low']"
+            :item-title="item => item || 'All Severities'"
+          )
 
   // Charts Section
-  .grid.grid-cols-1.gap-6.lg:grid-cols-2
-    // Issues Over Time
-    .card
-      .card-header
-        h3.text-lg.font-medium Issues Over Time
-      .card-body
-        .chart-container
+  v-row.mt-6
+    v-col(cols="12" lg="6")
+      v-card
+        v-card-title Issues Over Time
+        v-card-text
           canvas(ref="issuesTimelineChart")
     
-    // Issues by Status
-    .card
-      .card-header
-        h3.text-lg.font-medium Issues by Status
-      .card-body
-        .chart-container
+    v-col(cols="12" lg="6")
+      v-card
+        v-card-title Issues by Status
+        v-card-text
           canvas(ref="statusDistributionChart")
     
-    // Issues by Severity
-    .card
-      .card-header
-        h3.text-lg.font-medium Issues by Severity
-      .card-body
-        .chart-container
+    v-col(cols="12" lg="6")
+      v-card
+        v-card-title Issues by Severity
+        v-card-text
           canvas(ref="severityDistributionChart")
     
-    // Resolution Time Distribution
-    .card
-      .card-header
-        h3.text-lg.font-medium Resolution Time Distribution
-      .card-body
-        .chart-container
+    v-col(cols="12" lg="6")
+      v-card
+        v-card-title Resolution Time Distribution
+        v-card-text
           canvas(ref="resolutionTimeChart")
 
   // Detailed Metrics Table
-  .card
-    .card-header
-      h3.text-lg.font-medium Detailed Metrics
-    .card-body
-      table.table
-        thead.table-header
+  v-card.mt-6
+    v-card-title Detailed Metrics
+    v-card-text
+      v-table
+        thead
           tr
-            th.table-header-cell Metric
-            th.table-header-cell Value
-        tbody.table-body
-          tr.table-row
-            td.table-cell Total Issues
-            td.table-cell {{ stats.totalIssues }}
-          tr.table-row
-            td.table-cell Critical Issues
-            td.table-cell {{ stats.criticalIssues }}
-          tr.table-row
-            td.table-cell Average Resolution Time (Critical)
-            td.table-cell {{ formatDuration(stats.avgResolutionTimeCritical) }}
-          tr.table-row
-            td.table-cell Resolution Rate (Critical)
-            td.table-cell {{ stats.resolutionRateCritical }}%
-          tr.table-row
-            td.table-cell Most Common Topic
-            td.table-cell {{ stats.mostCommonTopic }}
-          tr.table-row
-            td.table-cell Longest Resolution Time
-            td.table-cell {{ formatDuration(stats.longestResolutionTime) }}
+            th.text-left Metric
+            th.text-left Value
+        tbody
+          tr
+            td Total Issues
+            td {{ stats.totalIssues }}
+          tr
+            td Critical Issues
+            td {{ stats.criticalIssues }}
+          tr
+            td Average Resolution Time (Critical)
+            td {{ formatDuration(stats.avgResolutionTimeCritical) }}
+          tr
+            td Resolution Rate (Critical)
+            td {{ stats.resolutionRateCritical }}%
+          tr
+            td Most Common Topic
+            td {{ stats.mostCommonTopic }}
+          tr
+            td Longest Resolution Time
+            td {{ formatDuration(stats.longestResolutionTime) }}
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, inject, onUnmounted } from 'vue'
 import dayjs from 'dayjs'
+import relativeTime from 'dayjs/plugin/relativeTime'
+
+dayjs.extend(relativeTime)
 import Chart from 'chart.js/auto'
 import type { Issue } from '~/types'
 
@@ -210,18 +219,31 @@ const calculateStats = (issues: Issue[]) => {
 
 const filterIssues = (issues: Issue[]): Issue[] => {
   return issues.filter(issue => {
-    const matchesPeriod = filters.value.period === 'all' ? true :
-      dayjs(issue.startTimestamp).isAfter(
-        dayjs().subtract(
-          parseInt(filters.value.period),
-          filters.value.period.endsWith('d') ? 'day' : 'year'
-        )
-      )
-    
     const matchesTopic = !filters.value.topic || issue.topic === filters.value.topic
     const matchesSeverity = !filters.value.severity || issue.severity === filters.value.severity
     
-    return matchesPeriod && matchesTopic && matchesSeverity
+    let matchesPeriod = true
+    if (filters.value.period !== 'all') {
+      const startDate = dayjs(issue.startTimestamp)
+      const timeRangeParts = filters.value.period.match(/(\d+)([dwy])/)
+      
+      if (timeRangeParts) {
+        const [, amount, unit] = timeRangeParts
+        const unitMap: { [key: string]: 'day' | 'week' | 'month' | 'year' } = { 
+          d: 'day', 
+          w: 'week', 
+          y: 'year' 
+        }
+        const mappedUnit = unitMap[unit as keyof typeof unitMap]
+        if (mappedUnit) {
+          matchesPeriod = startDate.isAfter(
+            dayjs().subtract(parseInt(amount), mappedUnit)
+          )
+        }
+      }
+    }
+    
+    return matchesTopic && matchesSeverity && matchesPeriod
   })
 }
 
@@ -404,7 +426,8 @@ onMounted(async () => {
     })
   } catch (error) {
     console.error('Error fetching analytics data:', error)
-    alert('Error loading analytics data. Please try again.')
+    const showMessage = inject<(text: string, color?: 'success' | 'error') => void>('showMessage')
+    showMessage?.('Error loading analytics data. Please try again.', 'error')
   }
 })
 

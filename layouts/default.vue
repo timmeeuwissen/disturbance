@@ -1,31 +1,69 @@
 <template lang="pug">
-div.min-h-screen.bg-gray-100
-  nav.bg-white.shadow-sm
-    .max-w-7xl.mx-auto.px-4.sm:px-6.lg:px-8
-      .flex.justify-between.h-16
-        .flex
-          .flex-shrink-0.flex.items-center
-            h1.text-xl.font-bold Disturbance Monitor
-          .hidden.sm:ml-6.sm:flex.sm:space-x-8
-            NuxtLink.inline-flex.items-center.px-1.pt-1.text-sm.font-medium(
-              to="/"
-              :class="$route.path === '/' ? 'text-gray-900 border-b-2 border-indigo-500' : 'text-gray-500 hover:text-gray-700'"
-            ) New Issue
-            NuxtLink.inline-flex.items-center.px-1.pt-1.text-sm.font-medium(
-              to="/issues"
-              :class="$route.path === '/issues' ? 'text-gray-900 border-b-2 border-indigo-500' : 'text-gray-500 hover:text-gray-700'"
-            ) Issues Overview
-            NuxtLink.inline-flex.items-center.px-1.pt-1.text-sm.font-medium(
-              to="/analytics"
-              :class="$route.path === '/analytics' ? 'text-gray-900 border-b-2 border-indigo-500' : 'text-gray-500 hover:text-gray-700'"
-            ) Analytics
-  main
-    .max-w-7xl.mx-auto.py-6.sm:px-6.lg:px-8
-      slot
+v-app
+  v-app-bar(color="primary" app)
+    v-app-bar-title Disturbance Monitor
+    v-spacer
+    v-tabs(v-model="activeTab" color="white")
+      v-tab(to="/") New Issue
+      v-tab(to="/issues") Issues Overview
+      v-tab(to="/analytics") Analytics
+
+  v-main
+    v-container(fluid)
+      v-row(justify="center")
+        v-col(cols="12" lg="10")
+          slot
+
+  // Global snackbar for notifications
+  v-snackbar(
+    v-model="snackbar.show"
+    :color="snackbar.color"
+    :timeout="3000"
+    location="top"
+  )
+    | {{ snackbar.text }}
+    template(#actions)
+      v-btn(
+        color="white"
+        variant="text"
+        @click="snackbar.show = false"
+      ) Close
 </template>
 
 <script setup lang="ts">
-// Layout script
+const activeTab = ref(0)
+
+// Global snackbar state
+export const snackbar = reactive({
+  show: false,
+  text: '',
+  color: 'success'
+})
+
+// Show snackbar message
+export const showMessage = (text: string, color: 'success' | 'error' = 'success') => {
+  snackbar.text = text
+  snackbar.color = color
+  snackbar.show = true
+}
+
+// Update active tab based on current route
+watch(() => useRoute().path, (newPath) => {
+  switch (newPath) {
+    case '/':
+      activeTab.value = 0
+      break
+    case '/issues':
+      activeTab.value = 1
+      break
+    case '/analytics':
+      activeTab.value = 2
+      break
+  }
+}, { immediate: true })
+
+// Provide snackbar functionality to child components
+provide('showMessage', showMessage)
 </script>
 
 <style lang="sass">

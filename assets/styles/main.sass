@@ -1,111 +1,70 @@
-// Tailwind
-@tailwind base
-@tailwind components
-@tailwind utilities
-
-// Custom utility classes
-.form-input
-  @apply mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm
-
-.form-label
-  @apply block text-sm font-medium text-gray-700 mb-1
-
-.form-group
-  @apply mb-4
-
-.btn
-  @apply px-4 py-2 rounded-md text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors
-
-.btn-primary
-  @apply btn bg-indigo-600 text-white hover:bg-indigo-700 focus:ring-indigo-500
-
-.btn-secondary
-  @apply btn bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 focus:ring-indigo-500
-
-.btn-danger
-  @apply btn bg-red-600 text-white hover:bg-red-700 focus:ring-red-500
-
-.card
-  @apply bg-white shadow rounded-lg
-
-.card-header
-  @apply px-4 py-5 border-b border-gray-200 sm:px-6
-
-.card-body
-  @apply px-4 py-5 sm:p-6
-
-.card-footer
-  @apply px-4 py-4 sm:px-6 border-t border-gray-200
-
-// Status badges
+// Custom styles for status badges
 .status-badge
-  @apply px-2 py-1 text-xs font-medium rounded-full
+  border-radius: 12px
+  padding: 4px 8px
+  font-size: 0.75rem
+  font-weight: 500
 
 .status-open
-  @apply status-badge bg-yellow-100 text-yellow-800
+  background-color: var(--v-warning-lighten5)
+  color: var(--v-warning-darken2)
 
 .status-investigating
-  @apply status-badge bg-blue-100 text-blue-800
+  background-color: var(--v-info-lighten5)
+  color: var(--v-info-darken2)
 
 .status-mitigated
-  @apply status-badge bg-green-100 text-green-800
+  background-color: var(--v-success-lighten5)
+  color: var(--v-success-darken2)
 
 .status-resolved
-  @apply status-badge bg-green-100 text-green-800
+  background-color: var(--v-success-lighten5)
+  color: var(--v-success-darken2)
 
 .status-closed
-  @apply status-badge bg-gray-100 text-gray-800
+  background-color: var(--v-grey-lighten5)
+  color: var(--v-grey-darken2)
 
 // Severity badges
 .severity-badge
-  @apply px-2 py-1 text-xs font-medium rounded-full
+  border-radius: 12px
+  padding: 4px 8px
+  font-size: 0.75rem
+  font-weight: 500
 
 .severity-critical
-  @apply severity-badge bg-red-100 text-red-800
+  background-color: var(--v-error-lighten5)
+  color: var(--v-error-darken2)
 
 .severity-high
-  @apply severity-badge bg-orange-100 text-orange-800
+  background-color: var(--v-warning-lighten5)
+  color: var(--v-warning-darken2)
 
 .severity-medium
-  @apply severity-badge bg-yellow-100 text-yellow-800
+  background-color: var(--v-info-lighten5)
+  color: var(--v-info-darken2)
 
 .severity-low
-  @apply severity-badge bg-green-100 text-green-800
+  background-color: var(--v-success-lighten5)
+  color: var(--v-success-darken2)
 
-// Table styles
-.table-container
-  @apply -mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8
-
-.table-inner
-  @apply inline-block min-w-full py-2 align-middle md:px-6 lg:px-8
-
-.table
-  @apply min-w-full divide-y divide-gray-300
-
-.table-header
-  @apply bg-gray-50
-
-.table-header-cell
-  @apply px-3 py-3.5 text-left text-sm font-semibold text-gray-900
-
-.table-body
-  @apply divide-y divide-gray-200 bg-white
-
-.table-row
-  @apply hover:bg-gray-50
-
-.table-cell
-  @apply whitespace-nowrap px-3 py-4 text-sm text-gray-500
-
-// Analytics styles
-.stat-card
-  @apply px-4 py-5 bg-white shadow rounded-lg overflow-hidden sm:p-6
-
-.stat-title
-  @apply text-sm font-medium text-gray-500 truncate
-
-.stat-value
-  @apply mt-1 text-3xl font-semibold text-gray-900
-
+// Chart container
 .chart-container
-  @apply h-64 bg-white rounded-lg shadow p-4
+  height: 300px
+  background-color: white
+  border-radius: 4px
+  padding: 16px
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1)
+
+// Custom spacing utilities
+.space-y-2 > *:not(:first-child)
+  margin-top: 8px
+
+.space-y-4 > *:not(:first-child)
+  margin-top: 16px
+
+.space-x-2 > *:not(:first-child)
+  margin-left: 8px
+
+.space-x-4 > *:not(:first-child)
+  margin-left: 16px
