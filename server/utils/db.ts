@@ -97,6 +97,11 @@ const statements = {
 }
 
 export const dbService = {
+  // Execute raw SQL query (admin only)
+  executeQuery(query: string): any[] {
+    return db.prepare(query).all()
+  },
+
   getAllIssues(): Issue[] {
     return statements.getAllIssues.all() as Issue[]
   },

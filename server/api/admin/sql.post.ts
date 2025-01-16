@@ -1,16 +1,8 @@
-import { Database } from 'sqlite3'
-import { promisify } from 'util'
 import type { SqlQueryResult } from '~/types'
+import { dbService } from '~/server/utils/db'
 
 export default defineEventHandler(async (event) => {
-  const { isAdmin } = useAdmin()
-  if (!isAdmin.value) {
-    throw createError({
-      statusCode: 403,
-      message: 'Unauthorized: Admin access required'
-    })
-  }
-
+  // Admin check will be handled by middleware
   const { query } = await readBody(event)
   if (!query) {
     throw createError({
@@ -28,11 +20,8 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const db = new Database('db/disturbance.db')
-  const runAsync = promisify(db.all).bind(db)
-
   try {
-    const rows = await runAsync(query)
+    const rows = dbService.executeQuery(query)
     const result: SqlQueryResult = {
       columns: rows.length > 0 ? Object.keys(rows[0]) : [],
       rows,
@@ -44,7 +33,5 @@ export default defineEventHandler(async (event) => {
       statusCode: 400,
       message: error.message
     })
-  } finally {
-    db.close()
   }
 })
