@@ -10,7 +10,6 @@
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
-    "@mdi/font": "^7.4.47",
     "better-sqlite3": "^11.8.0",
     "chart.js": "^4.4.7",
     "dayjs": "^1.11.13",
@@ -19,13 +18,15 @@
     "pug-loader": "^2.4.0",
     "sass-loader": "^16.0.4",
     "vue": "latest",
-    "vue-router": "latest",
-    "vuetify": "^3.7.6"
+    "vue-router": "latest"
   },
   "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e",
   "devDependencies": {
     "@invictus.codes/nuxt-vuetify": "^0.3.0",
+    "@mdi/font": "^7.4.47",
+    "@nuxtjs/vuetify": "^1.12.3",
     "@types/better-sqlite3": "^7.6.12",
-    "sass-embedded": "^1.83.4"
+    "sass-embedded": "^1.83.4",
+    "vuetify": "^3.7.6"
   }
 }

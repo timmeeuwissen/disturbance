@@ -2,7 +2,7 @@
 export default defineNuxtConfig({
   devtools: { enabled: true },
   
-  modules: [],
+  modules: ['vuetify/nuxt'],
 
   css: [
     'vuetify/lib/styles/main.sass',
@@ -12,6 +12,16 @@ export default defineNuxtConfig({
 
   build: {
     transpile: ['vuetify']
+  },
+
+  vuetify: {
+    moduleOptions: {
+      /* module specific options */
+    },
+    vuetifyOptions: {
+      /* vuetify options */
+      ssr: false
+    }
   },
 
   vite: {
