@@ -7,8 +7,8 @@ export interface Issue {
   severity: 'critical' | 'high' | 'medium' | 'low'
   status: 'open' | 'investigating' | 'mitigated' | 'resolved' | 'closed'
   topic: string
-  startTimestamp: string
-  reportTimestamp: string
+  startTimestamp?: string
+  reportTimestamp?: string
   resolutionTimestamp?: string
   mitigationSteps?: string
   createdAt: string
@@ -16,6 +16,18 @@ export interface Issue {
   references?: Reference[]
   impactedSystems?: ImpactedSystem[]
   involvedTeams?: InvolvedTeam[]
+  communicationLogs?: CommunicationLog[]
+}
+
+export interface CommunicationLog {
+  id: number
+  issueId: number
+  link?: string
+  datetime: string
+  communicator: string
+  system?: string
+  isInternal: boolean
+  message: string
 }
 
 export interface Reference {

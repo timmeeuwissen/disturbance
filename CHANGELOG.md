@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 ## [2025-01-16]
 
+- Fixed array syntax in analytics page v-select components
+
+## [2025-01-16]
+
 - Fixed pug template array syntax in v-select components
 
 ## [2025-01-16]

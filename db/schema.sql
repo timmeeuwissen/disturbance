@@ -8,12 +8,29 @@ CREATE TABLE IF NOT EXISTS issues (
     severity TEXT NOT NULL CHECK (severity IN ('critical', 'high', 'medium', 'low')),
     status TEXT NOT NULL CHECK (status IN ('open', 'investigating', 'mitigated', 'resolved', 'closed')),
     topic TEXT NOT NULL,
-    start_timestamp DATETIME NOT NULL,
-    report_timestamp DATETIME NOT NULL,
+    start_timestamp DATETIME,
+    report_timestamp DATETIME,
     resolution_timestamp DATETIME,
     mitigation_steps TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    CHECK (
+        (status != 'resolved' AND status != 'closed') OR 
+        (start_timestamp IS NOT NULL AND resolution_timestamp IS NOT NULL)
+    )
+);
+
+-- Communication logs for issue timeline
+CREATE TABLE IF NOT EXISTS communication_logs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    issue_id INTEGER NOT NULL,
+    link TEXT,
+    datetime DATETIME NOT NULL,
+    communicator TEXT NOT NULL,
+    system TEXT,
+    is_internal BOOLEAN NOT NULL DEFAULT 0,
+    message TEXT NOT NULL,
+    FOREIGN KEY (issue_id) REFERENCES issues(id) ON DELETE CASCADE
 );
 
 -- References table for URLs (Jira, Slack, etc.)
@@ -49,3 +66,5 @@ CREATE INDEX IF NOT EXISTS idx_issues_status ON issues(status);
 CREATE INDEX IF NOT EXISTS idx_issues_severity ON issues(severity);
 CREATE INDEX IF NOT EXISTS idx_issues_topic ON issues(topic);
 CREATE INDEX IF NOT EXISTS idx_issues_timestamps ON issues(start_timestamp, report_timestamp, resolution_timestamp);
+CREATE INDEX IF NOT EXISTS idx_communication_logs_datetime ON communication_logs(datetime);
+CREATE INDEX IF NOT EXISTS idx_communication_logs_issue ON communication_logs(issue_id);

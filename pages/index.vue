@@ -75,8 +75,7 @@ v-card
               v-model="issue.startTimestamp"
               label="Start Time"
               type="datetime-local"
-              required
-              :rules="[v => !!v || 'Start time is required']"
+              :rules="timestampRules"
             )
 
           v-col(cols="12" sm="4")
@@ -84,8 +83,6 @@ v-card
               v-model="issue.reportTimestamp"
               label="Report Time"
               type="datetime-local"
-              required
-              :rules="[v => !!v || 'Report time is required']"
             )
 
           v-col(cols="12" sm="4")
@@ -93,6 +90,7 @@ v-card
               v-model="issue.resolutionTimestamp"
               label="Resolution Time"
               type="datetime-local"
+              :rules="timestampRules"
             )
 
         v-row
@@ -111,6 +109,70 @@ v-card
               placeholder="Steps taken to mitigate the issue"
               rows="3"
             )
+
+        // Communication Logs Section
+        v-row
+          v-col(cols="12")
+            v-card(variant="outlined")
+              v-card-title Communication Timeline
+              v-card-text
+                v-row(v-for="(log, index) in communicationLogs" :key="index")
+                  v-col(cols="12" sm="3")
+                    v-text-field(
+                      v-model="log.datetime"
+                      label="Date & Time"
+                      type="datetime-local"
+                      required
+                    )
+                  v-col(cols="12" sm="2")
+                    v-text-field(
+                      v-model="log.communicator"
+                      label="Communicator"
+                      placeholder="Who communicated"
+                      required
+                    )
+                  v-col(cols="12" sm="2")
+                    v-text-field(
+                      v-model="log.system"
+                      label="System"
+                      placeholder="Communication system"
+                    )
+                  v-col(cols="12" sm="2")
+                    v-text-field(
+                      v-model="log.link"
+                      label="Link"
+                      type="url"
+                      placeholder="URL (optional)"
+                    )
+                  v-col(cols="12" sm="2")
+                    v-switch(
+                      v-model="log.isInternal"
+                      label="Internal"
+                      color="primary"
+                      hide-details
+                    )
+                  v-col(cols="12" sm="1")
+                    v-btn(
+                      color="error"
+                      variant="outlined"
+                      @click="removeCommunicationLog(index)"
+                      block
+                    ) Remove
+                  v-col(cols="12")
+                    v-textarea(
+                      v-model="log.message"
+                      label="Message"
+                      placeholder="Communication details"
+                      rows="2"
+                      required
+                    )
+                v-btn(
+                  color="primary"
+                  variant="outlined"
+                  @click="addCommunicationLog"
+                  class="mt-2"
+                  block
+                ) Add Communication Log
 
         // References Section
         v-row
@@ -229,7 +291,8 @@ v-card
 </template>
 
 <script setup lang="ts">
-import type { Issue, Reference, ImpactedSystem, InvolvedTeam } from '~/types'
+import type { Issue, Reference, ImpactedSystem, InvolvedTeam, CommunicationLog } from '~/types'
+import dayjs from 'dayjs'
 
 const form = ref<any>(null)
 
@@ -250,6 +313,30 @@ const issue = ref<Omit<Issue, 'id' | 'createdAt' | 'updatedAt'>>({
 const references = ref<Omit<Reference, 'id' | 'issueId'>[]>([])
 const impactedSystems = ref<Omit<ImpactedSystem, 'id' | 'issueId'>[]>([])
 const involvedTeams = ref<Omit<InvolvedTeam, 'id' | 'issueId'>[]>([])
+const communicationLogs = ref<Omit<CommunicationLog, 'id' | 'issueId'>[]>([])
+
+// Computed validation rules
+const timestampRules = computed(() => {
+  if (issue.value.status === 'resolved' || issue.value.status === 'closed') {
+    return [(v: string) => !!v || 'Required for resolved issues']
+  }
+  return []
+})
+
+const addCommunicationLog = () => {
+  communicationLogs.value.push({
+    link: '',
+    datetime: dayjs().format('YYYY-MM-DDTHH:mm'),
+    communicator: '',
+    system: '',
+    isInternal: false,
+    message: ''
+  })
+}
+
+const removeCommunicationLog = (index: number) => {
+  communicationLogs.value.splice(index, 1)
+}
 
 const addReference = () => {
   references.value.push({ url: '', referenceType: 'jira' })
@@ -280,6 +367,7 @@ const resetForm = () => {
   references.value = []
   impactedSystems.value = []
   involvedTeams.value = []
+  communicationLogs.value = []
 }
 
 const submitIssue = async () => {
@@ -296,7 +384,8 @@ const submitIssue = async () => {
         ...issue.value,
         references: references.value,
         impactedSystems: impactedSystems.value,
-        involvedTeams: involvedTeams.value
+        involvedTeams: involvedTeams.value,
+        communicationLogs: communicationLogs.value
       }
     })
     
