@@ -18,11 +18,11 @@ export const useAdmin = () => {
   }
 
   const toggleAdmin = () => {
-    store.setAdmin(!store.isAdmin)
+    store.toggleAdmin()
   }
 
   return {
-    isAdmin: computed(() => store.isAdmin),
+    store,
     adminTheme,
     toggleAdmin
   }

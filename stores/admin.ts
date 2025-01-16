@@ -11,6 +11,9 @@ export const useAdminStore = defineStore('admin', {
   actions: {
     setAdmin(value: boolean) {
       this.isAdmin = value
+    },
+    toggleAdmin() {
+      this.isAdmin = !this.isAdmin
     }
   },
   persist: true

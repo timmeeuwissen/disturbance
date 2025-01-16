@@ -1,9 +1,9 @@
 import { useAdmin } from '~/composables/useAdmin'
 
 export default defineNuxtRouteMiddleware((to) => {
-  const { isAdmin } = useAdmin()
+  const { store } = useAdmin()
 
-  if (to.path.startsWith('/admin') && !isAdmin.value) {
+  if (to.path.startsWith('/admin') && !store.isAdmin) {
     return navigateTo('/')
   }
 })

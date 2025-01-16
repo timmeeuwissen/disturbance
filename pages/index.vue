@@ -17,7 +17,7 @@ v-container(fluid)
         v-card-text
           p Analyze disturbance data with interactive charts and reports.
 
-  v-row(v-if="admin.isAdmin")
+  v-row(v-if="admin.store.isAdmin")
     v-col(cols="12")
       h2.text-warning.mb-4 Administration
 

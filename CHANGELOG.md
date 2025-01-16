@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 ## [2025-01-16]
 
+- Fixed admin toggle functionality:n- Updated layout to use proper v-model bindingn- Fixed composable to handle toggle correctlyn- Improved state management interaction
+
+## [2025-01-16]
+
 - Fixed Pinia configuration:n- Added proper module configurationn- Fixed auto-imports setupn- Added TypeScript strict mode
 
 ## [2025-01-16]
