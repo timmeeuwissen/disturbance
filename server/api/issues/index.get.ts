@@ -4,11 +4,10 @@ export default defineEventHandler(async () => {
   try {
     const issues = dbService.getAllIssues()
     return issues
-  } catch (error) {
-    console.error('Error fetching issues:', error)
+  } catch (error: any) {
     throw createError({
       statusCode: 500,
-      message: 'Failed to fetch issues'
+      message: error.message
     })
   }
 })

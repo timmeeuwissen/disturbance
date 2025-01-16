@@ -57,27 +57,26 @@ v-card
     
     // Table
     v-data-table(
+      v-model:items-per-page="itemsPerPage"
+      v-model:page="currentPage"
       :headers="headers"
       :items="filteredIssues"
-      :items-per-page="itemsPerPage"
-      :page="currentPage"
-      @update:page="currentPage = $event"
-      @update:items-per-page="itemsPerPage = $event"
+      :loading="loading"
     )
       template(#item.status="{ item }")
-        span(:class="getStatusClass(item.raw.status)") {{ item.raw.status }}
+        span(:class="getStatusClass(item.status)") {{ item.status }}
       
       template(#item.severity="{ item }")
-        span(:class="getSeverityClass(item.raw.severity)") {{ item.raw.severity }}
+        span(:class="getSeverityClass(item.severity)") {{ item.severity }}
       
       template(#item.startTimestamp="{ item }")
-        | {{ formatDate(item.raw.startTimestamp) }}
+        | {{ formatDate(item.startTimestamp) }}
       
       template(#item.timeToReport="{ item }")
-        | {{ getTimeToReport(item.raw) }}
+        | {{ getTimeToReport(item) }}
       
       template(#item.timeToResolve="{ item }")
-        | {{ getTimeToResolve(item.raw) }}
+        | {{ getTimeToResolve(item) }}
       
       template(#item.actions="{ item }")
         v-btn(
@@ -85,14 +84,14 @@ v-card
           variant="text"
           size="small"
           color="primary"
-          @click="editIssue(item.raw)"
+          @click="editIssue(item)"
         )
         v-btn(
           icon="mdi-eye"
           variant="text"
           size="small"
           color="primary"
-          @click="viewDetails(item.raw)"
+          @click="viewDetails(item)"
         )
 
   // Export Dialog
@@ -133,8 +132,11 @@ v-card
 <script setup lang="ts">
 import { ref, computed, onMounted, inject } from 'vue'
 import dayjs from 'dayjs'
+import relativeTime from 'dayjs/plugin/relativeTime'
 import type { Issue, IssueFilters, ExportOptions } from '~/types'
 import { useLists } from '~/composables/useLists'
+
+dayjs.extend(relativeTime)
 
 // Lists
 const { 
@@ -308,6 +310,7 @@ onMounted(async () => {
   await loadLists()
   try {
     const response = await $fetch<Issue[]>('/api/issues')
+    console.log('Fetched issues:', response) // Debug log
     issues.value = response
   } catch (error) {
     console.error('Error fetching issues:', error)
@@ -317,15 +320,31 @@ onMounted(async () => {
 })
 </script>
 
-<style scoped>
-.status-open { color: var(--v-warning-base); }
-.status-investigating { color: var(--v-info-base); }
-.status-mitigated { color: var(--v-success-lighten1); }
-.status-resolved { color: var(--v-success-base); }
-.status-closed { color: var(--v-grey-base); }
+<style lang="sass">
+.status-open
+  color: var(--v-warning-base)
 
-.severity-critical { color: var(--v-error-darken1); }
-.severity-high { color: var(--v-error-base); }
-.severity-medium { color: var(--v-warning-base); }
-.severity-low { color: var(--v-success-base); }
+.status-investigating
+  color: var(--v-info-base)
+
+.status-mitigating
+  color: var(--v-success-lighten1)
+
+.status-resolved
+  color: var(--v-success-base)
+
+.status-closed
+  color: var(--v-grey-base)
+
+.severity-critical
+  color: var(--v-error-darken1)
+
+.severity-high
+  color: var(--v-error-base)
+
+.severity-medium
+  color: var(--v-warning-base)
+
+.severity-low
+  color: var(--v-success-base)
 </style>

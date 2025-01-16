@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 ## [2025-01-16]
 
+- Added database statistics command:n- Added script to show record counts per tablen- Added database size and last modified daten- Added color-coded outputn- Added make db-stats target
+
+## [2025-01-16]
+
 - Fixed fixture loading issues:n- Added DELETE statements to clear existing datan- Fixed unique constraint violations in tagsn- Fixed duplicate issue tag combinationsn- Restored missing issue and relation data
 
 ## [2025-01-16]

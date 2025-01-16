@@ -4,6 +4,27 @@ import type { Issue, Reference, ImpactedSystem, InvolvedTeam } from '~/types'
 
 export const db = new Database(resolve(process.cwd(), 'db/disturbance.db'))
 
+// Helper to convert snake_case to camelCase
+const toCamelCase = (str: string) => {
+  return str.replace(/_([a-z])/g, (g) => g[1].toUpperCase())
+}
+
+// Helper to convert object keys from snake_case to camelCase
+const convertKeys = (obj: any): any => {
+  if (Array.isArray(obj)) {
+    return obj.map(convertKeys)
+  }
+  if (obj === null || typeof obj !== 'object') {
+    return obj
+  }
+  return Object.fromEntries(
+    Object.entries(obj).map(([key, value]) => [
+      toCamelCase(key),
+      convertKeys(value)
+    ])
+  )
+}
+
 // Prepare statements for better performance
 const statements = {
   // Lists
@@ -153,15 +174,15 @@ export const dbService = {
 
   // Lists
   getAllStatuses() {
-    return statements.getAllStatuses.all()
+    return convertKeys(statements.getAllStatuses.all())
   },
   
   getAllSeverities() {
-    return statements.getAllSeverities.all()
+    return convertKeys(statements.getAllSeverities.all())
   },
   
   getAllReferenceTypes() {
-    return statements.getAllReferenceTypes.all()
+    return convertKeys(statements.getAllReferenceTypes.all())
   },
   
   createStatus(name: string, isFinal: boolean, isDefault: boolean = false) {
@@ -206,17 +227,17 @@ export const dbService = {
   },
 
   getAllIssues(): Issue[] {
-    return statements.getAllIssues.all() as Issue[]
+    return convertKeys(statements.getAllIssues.all()) as Issue[]
   },
   
   getIssueById(id: number): Issue | undefined {
-    const issue = statements.getIssueById.get(id) as Issue | undefined
+    const issue = convertKeys(statements.getIssueById.get(id)) as Issue | undefined
     if (!issue) return undefined
     
     // Get related data
-    const references = statements.getIssueReferences.all(id) as Reference[]
-    const impactedSystems = statements.getIssueImpactedSystems.all(id) as ImpactedSystem[]
-    const involvedTeams = statements.getIssueInvolvedTeams.all(id) as InvolvedTeam[]
+    const references = convertKeys(statements.getIssueReferences.all(id)) as Reference[]
+    const impactedSystems = convertKeys(statements.getIssueImpactedSystems.all(id)) as ImpactedSystem[]
+    const involvedTeams = convertKeys(statements.getIssueInvolvedTeams.all(id)) as InvolvedTeam[]
     
     return {
       ...issue,
