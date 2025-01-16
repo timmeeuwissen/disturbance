@@ -4457,7 +4457,7 @@ pug-walk@^2.0.0:
 
 pug@^3.0.3:
   version "3.0.3"
-  resolved "https://registry.npmjs.org/pug/-/pug-3.0.3.tgz"
+  resolved "https://registry.yarnpkg.com/pug/-/pug-3.0.3.tgz#e18324a314cd022883b1e0372b8af3a1a99f7597"
   integrity sha512-uBi6kmc9f3SZ3PXxqcHiUZLmIXgfgWooKWXcwSGwQd2Zi5Rb0bT14+8CJjJgI8AB+nndLaNgHGrcc6bPIB665g==
   dependencies:
     pug-code-gen "^3.0.3"

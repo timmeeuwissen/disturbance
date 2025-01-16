@@ -15,6 +15,7 @@
     "chart.js": "^4.4.7",
     "dayjs": "^1.11.13",
     "nuxt": "^3.15.1",
+    "pug": "^3.0.3",
     "pug-loader": "^2.4.0",
     "sass-loader": "^16.0.4",
     "vue": "latest",
@@ -25,7 +26,6 @@
   "devDependencies": {
     "@invictus.codes/nuxt-vuetify": "^0.3.0",
     "@types/better-sqlite3": "^7.6.12",
-    "pug": "^3.0.3",
     "sass-embedded": "^1.83.4"
   }
 }

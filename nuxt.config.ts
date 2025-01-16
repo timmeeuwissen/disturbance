@@ -18,11 +18,8 @@ export default defineNuxtConfig({
     define: {
       'process.env.DEBUG': false,
     },
-    ssr: {
-      noExternal: ['vuetify']
-    },
     clearScreen: false,
-    logLevel: 'info',
+    logLevel: 'warning',
     server: {
       hmr: {
         overlay: true
