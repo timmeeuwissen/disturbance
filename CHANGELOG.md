@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 ## [2025-01-16]
 
+- Added database fixtures and reset functionality:n- Added sample data fixtures for all tablesn- Added script to load fixturesn- Added script to reset database with confirmationn- Added make targets for database management
+
+## [2025-01-16]
+
 - Added list sorting functionality:n- Added sort_order field to list tablesn- Added drag and drop sorting UIn- Added API endpoint for updating sort ordern- Updated list display to respect sort ordern- Replaced toggles with chips for better UX
 
 ## [2025-01-16]
