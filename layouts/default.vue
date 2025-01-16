@@ -1,69 +1,61 @@
 <template lang="pug">
-  v-app
-    v-app-bar(color="primary")
-      v-app-bar-title Disturbance Monitor
-      v-spacer
-      v-tabs(v-model="activeTab" color="white")
-        v-tab(to="/") New Issue
-        v-tab(to="/issues") Issues Overview
-        v-tab(to="/analytics") Analytics
-
-    v-main
-      v-container(fluid)
-        v-row(justify="center")
-          v-col(cols="12" lg="10")
-            slot
-
-    v-snackbar(
-      v-model="snackbar.show"
-      :color="snackbar.color"
-      :timeout="3000"
-      location="top"
+v-app(:theme="isAdmin ? adminTheme : undefined")
+  v-app-bar(color="primary")
+    v-app-bar-title Disturbance Monitor
+    v-spacer
+    v-switch(
+      v-model="isAdmin"
+      color="warning"
+      hide-details
+      inset
+      label="Admin Mode"
+      @change="handleAdminChange"
     )
-      | {{ snackbar.text }}
-      template(#actions)
-        v-btn(color="white" variant="text" @click="snackbar.show = false") Close
+
+  v-navigation-drawer(permanent)
+    v-list(nav)
+      v-list-item(to="/" prepend-icon="mdi-home" title="Home")
+      v-list-item(to="/issues" prepend-icon="mdi-alert" title="Issues")
+      v-list-item(to="/analytics" prepend-icon="mdi-chart-bar" title="Analytics")
+      template(v-if="isAdmin")
+        v-divider
+        v-list-subheader Admin
+        v-list-item(
+          to="/admin/sql"
+          prepend-icon="mdi-database"
+          title="SQL Admin"
+          color="warning"
+        )
+        v-list-item(
+          to="/admin/lists"
+          prepend-icon="mdi-format-list-bulleted"
+          title="Lists"
+          color="warning"
+        )
+
+  v-main
+    v-container(fluid)
+      slot
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, watch, provide } from 'vue'
-import { useRoute } from '#app'
+import { watch } from 'vue'
+import { useAdmin } from '~/composables/useAdmin'
+import { useRouter } from '#app'
 
-const activeTab = ref(0)
+const router = useRouter()
+const { isAdmin, adminTheme } = useAdmin()
 
-// Global snackbar state
-const snackbar = reactive({
-  show: false,
-  text: '',
-  color: 'success'
-})
-
-// Show snackbar message
-const showMessage = (text: string, color: 'success' | 'error' = 'success') => {
-  snackbar.text = text
-  snackbar.color = color
-  snackbar.show = true
+const handleAdminChange = () => {
+  // If admin mode is disabled and we're on an admin page, redirect to home
+  if (!isAdmin.value && router.currentRoute.value.path.startsWith('/admin')) {
+    router.push('/')
+  }
 }
 
-// Update active tab based on current route
-watch(() => useRoute().path, (newPath) => {
-  switch (newPath) {
-    case '/':
-      activeTab.value = 0
-      break
-    case '/issues':
-      activeTab.value = 1
-      break
-    case '/analytics':
-      activeTab.value = 2
-      break
-  }
-}, { immediate: true })
-
-// Provide snackbar functionality to child components
-provide('showMessage', showMessage)
+// Watch for admin mode changes to update theme
+watch(isAdmin, (newValue) => {
+  // Force theme update by triggering a re-render
+  nextTick()
+})
 </script>
-
-<style lang="sass">
-// Layout styles
-</style>
