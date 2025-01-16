@@ -2,7 +2,15 @@
 export default defineNuxtConfig({
   devtools: { enabled: true },
   
-  modules: ['vuetify/nuxt'],
+  modules: [
+    async (options, nuxt) => {
+      nuxt.hooks.hook('vite:extendConfig', async config => {
+        const vuetify = await import('vite-plugin-vuetify')
+        config.plugins = config.plugins || []
+        config.plugins.push(vuetify.default())
+      })
+    }
+  ],
 
   css: [
     'vuetify/lib/styles/main.sass',

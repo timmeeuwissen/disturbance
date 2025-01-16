@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 ## [2025-01-16]
 
+- Added Vuetify, Sass, and Vite plugin for Vuetify
+
+## [2025-01-16]
+
 - Added Vuetify, Material Design Icons, and Nuxt Vuetify module dependencies
 
 ## [2025-01-15]
