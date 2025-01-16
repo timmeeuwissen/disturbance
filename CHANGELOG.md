@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 ## [2025-01-16]
 
+- Added default value support for lists:n- Added default flag to database scheman- Added triggers to ensure single default per typen- Updated API endpoints to handle default valuesn- Added UI controls for managing default values
+
+## [2025-01-16]
+
 - Added list management functionality:n- Added API endpoints for managing statuses, severities, and reference typesn- Implemented list management UI with CRUD operationsn- Added support for final status flagn- Added proper error handling and feedback
 
 ## [2025-01-16]
