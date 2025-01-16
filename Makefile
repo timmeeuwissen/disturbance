@@ -1,4 +1,4 @@
-.PHONY: dev build init-db reset-db load-fixtures help
+.PHONY: dev build init-db reset-db load-fixtures db-stats help
 
 # Colors
 YELLOW := \033[1;33m
@@ -25,6 +25,10 @@ reset-db: ## Reset database and load fixtures (requires confirmation)
 load-fixtures: ## Load sample data into database
 	@chmod +x scripts/load-fixtures.sh
 	@./scripts/load-fixtures.sh
+
+db-stats: ## Show database statistics
+	@chmod +x scripts/show-db-stats.sh
+	@./scripts/show-db-stats.sh
 
 help: ## Show this help
 	@echo "Usage: make [target]"

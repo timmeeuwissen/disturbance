@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 ## [2025-01-16]
 
+- Fixed fixture loading issues:n- Added DELETE statements to clear existing datan- Fixed unique constraint violations in tagsn- Fixed duplicate issue tag combinationsn- Restored missing issue and relation data
+
+## [2025-01-16]
+
 - Added detailed record counts:n- Added record counts by table categoryn- Added color-coded output for better readabilityn- Added counts to both load-fixtures and reset-db scriptsn- Added final record summary after database operations
 
 ## [2025-01-16]
