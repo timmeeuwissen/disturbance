@@ -80,9 +80,11 @@ v-card
 
           v-col(cols="12" sm="4")
             v-text-field(
-              v-model="issue.reportTimestamp"
+              :model-value="issue.reportTimestamp"
               label="Report Time"
               type="datetime-local"
+              readonly
+              disabled
             )
 
           v-col(cols="12" sm="4")
@@ -305,7 +307,7 @@ const issue = ref<Omit<Issue, 'id' | 'createdAt' | 'updatedAt'>>({
   status: null as unknown as 'open' | 'investigating' | 'mitigated' | 'resolved' | 'closed',
   topic: '',
   startTimestamp: '',
-  reportTimestamp: '',
+  reportTimestamp: dayjs().format('YYYY-MM-DDTHH:mm'),
   resolutionTimestamp: '',
   mitigationSteps: ''
 })
@@ -368,6 +370,7 @@ const resetForm = () => {
   impactedSystems.value = []
   involvedTeams.value = []
   communicationLogs.value = []
+  issue.value.reportTimestamp = dayjs().format('YYYY-MM-DDTHH:mm')
 }
 
 const submitIssue = async () => {

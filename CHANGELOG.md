@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 ## [2025-01-16]
 
+- Added communication logs section and made timestamps optional except when status is resolved
+
+## [2025-01-16]
+
 - Fixed array syntax in analytics page v-select components
 
 ## [2025-01-16]
