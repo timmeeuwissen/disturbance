@@ -12,7 +12,14 @@ v-container(fluid)
 
   v-row
     v-col(cols="12")
-      admin-erd-diagram
+      Suspense
+        template(#default)
+          admin-erd-diagram
+        template(#fallback)
+          v-card(variant="outlined")
+            v-card-text.d-flex.align-center.justify-center.py-8
+              v-progress-circular(indeterminate color="warning")
+              span.ml-2 Loading schema diagram...
 
   v-row
     v-col(cols="12")
@@ -34,7 +41,16 @@ v-container(fluid)
           )
         v-expand-transition
           v-card-text(v-show="!editorCollapsed")
-            admin-sql-editor(ref="sqlEditor" @query-results="handleQueryResults")
+            Suspense
+              template(#default)
+                admin-sql-editor(
+                  ref="sqlEditor"
+                  @query-results="handleQueryResults"
+                )
+              template(#fallback)
+                .d-flex.align-center.justify-center.py-8
+                  v-progress-circular(indeterminate color="warning")
+                  span.ml-2 Loading SQL editor...
 
   v-row(v-if="queryResult")
     v-col(cols="12")
@@ -74,9 +90,18 @@ v-container(fluid)
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, defineAsyncComponent } from 'vue'
 import type { SqlQueryResult } from '~/types'
 
+// Lazy load components
+const AdminErdDiagram = defineAsyncComponent(() => 
+  import('~/components/admin/ErdDiagram.vue')
+)
+const AdminSqlEditor = defineAsyncComponent(() => 
+  import('~/components/admin/SqlEditor.vue')
+)
+
+// State
 const editorCollapsed = ref(false)
 const resultsCollapsed = ref(false)
 const sqlEditor = ref<any>(null)
@@ -115,4 +140,18 @@ const downloadResults = () => {
   a.click()
   window.URL.revokeObjectURL(url)
 }
+
+// Error handling for async components
+onErrorCaptured((error) => {
+  console.error('Error in SQL admin page:', error)
+  const showMessage = inject<(text: string, color?: 'success' | 'error') => void>('showMessage')
+  showMessage?.('Error loading component. Please try refreshing the page.', 'error')
+  return false
+})
 </script>
+
+<style scoped>
+.v-card-text {
+  position: relative;
+}
+</style>

@@ -18,14 +18,18 @@ v-card(variant="outlined")
   v-expand-transition
     v-card-text(v-show="!collapsed")
       .mermaid-wrapper(ref="mermaidWrapper")
+        .loading-overlay(v-if="loading")
+          v-progress-circular(indeterminate color="warning")
+          span.ml-2 Loading diagram...
         .mermaid(
           ref="mermaidContainer"
+          v-show="!loading"
           @mousedown="startDrag"
           @mousemove="doDrag"
           @mouseup="stopDrag"
           @mouseleave="stopDrag"
         )
-        .zoom-controls.pa-2
+        .zoom-controls.pa-2(v-show="!loading")
           v-btn-group
             v-btn(
               icon="mdi-plus"
@@ -48,16 +52,17 @@ v-card(variant="outlined")
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import mermaid from 'mermaid'
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 
 const collapsed = ref(true)
+const loading = ref(true)
 const mermaidWrapper = ref<HTMLElement | null>(null)
 const mermaidContainer = ref<HTMLElement | null>(null)
 const scale = ref(1)
 const position = ref({ x: 0, y: 0 })
 let isDragging = false
 let startPosition = { x: 0, y: 0 }
+let resizeObserver: ResizeObserver | null = null
 
 // Pan functionality
 const startDrag = (e: MouseEvent) => {
@@ -105,7 +110,12 @@ const updateTransform = () => {
 
 // Fetch and render ERD diagram
 const generateERD = async () => {
+  loading.value = true
   try {
+    // Dynamically import Mermaid
+    const { default: mermaid } = await import('mermaid')
+
+    // Fetch schema
     const { mermaidCode } = await $fetch<{ mermaidCode: string }>('/api/admin/schema')
 
     // Initialize Mermaid with custom theme
@@ -135,11 +145,39 @@ const generateERD = async () => {
     }
   } catch (error) {
     console.error('Error generating ERD:', error)
+    const showMessage = inject<(text: string, color?: 'success' | 'error') => void>('showMessage')
+    showMessage?.('Error loading database schema. Please try refreshing the page.', 'error')
+  } finally {
+    loading.value = false
   }
 }
 
-onMounted(async () => {
-  await generateERD()
+// Handle resize
+const handleResize = () => {
+  if (!collapsed.value) {
+    resetView()
+  }
+}
+
+onMounted(() => {
+  // Set up resize observer
+  if (mermaidWrapper.value) {
+    resizeObserver = new ResizeObserver(handleResize)
+    resizeObserver.observe(mermaidWrapper.value)
+  }
+
+  // Generate ERD when expanded
+  watch(collapsed, async (newValue) => {
+    if (!newValue && !mermaidContainer.value?.innerHTML) {
+      await generateERD()
+    }
+  })
+})
+
+onBeforeUnmount(() => {
+  if (resizeObserver) {
+    resizeObserver.disconnect()
+  }
 })
 </script>
 
@@ -156,6 +194,19 @@ onMounted(async () => {
   height: 100%;
 }
 
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(255, 255, 255, 0.9);
+  z-index: 1;
+}
+
 .mermaid {
   position: absolute;
   background-color: white;
@@ -164,6 +215,7 @@ onMounted(async () => {
   cursor: grab;
   transform-origin: center;
   transition: transform 0.1s;
+  will-change: transform;
 }
 
 .zoom-controls {

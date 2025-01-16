@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 ## [2025-01-16]
 
+- Split enumerations into separate tables (severities, statuses, reference_types), added isFinal flag to statuses, improved type safety across components
+
+## [2025-01-16]
+
 - Improved type safety by using proper enums for status and severity values, added value handling helpers
 
 ## [2025-01-16]
