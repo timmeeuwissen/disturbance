@@ -3,6 +3,8 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   
   modules: [
+    '@pinia/nuxt',
+    '@pinia-plugin-persistedstate/nuxt',
     async (options, nuxt) => {
       nuxt.hooks.hook('vite:extendConfig', async config => {
         const vuetify = await import('vite-plugin-vuetify')
@@ -54,6 +56,10 @@ export default defineNuxtConfig({
     public: {
       apiBase: '/api'
     }
+  },
+
+  imports: {
+    dirs: ['stores']
   },
 
   compatibilityDate: '2025-01-15'

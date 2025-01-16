@@ -1,8 +1,9 @@
-import { ref } from 'vue'
-import { useStorage } from '@vueuse/core'
+import { computed } from 'vue'
+import { useAdminStore } from '~/stores/admin'
 
 export const useAdmin = () => {
-  const isAdmin = useStorage('disturbance-admin-mode', false)
+  const store = useAdminStore()
+
   const adminTheme = {
     dark: false,
     colors: {
@@ -17,11 +18,11 @@ export const useAdmin = () => {
   }
 
   const toggleAdmin = () => {
-    isAdmin.value = !isAdmin.value
+    store.setAdmin(!store.isAdmin)
   }
 
   return {
-    isAdmin,
+    isAdmin: computed(() => store.isAdmin),
     adminTheme,
     toggleAdmin
   }

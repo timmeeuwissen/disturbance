@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 ## [2025-01-16]
 
+- Fixed SQL admin page performance issues:n- Added proper lazy loading for heavy componentsn- Improved error handling and retry logicn- Added loading states and error boundariesn- Fixed component initialization issues
+
+## [2025-01-16]
+
 - Improved SQL admin page performance by adding lazy loading for components, optimized Monaco editor and ERD diagram initialization
 
 ## [2025-01-16]
