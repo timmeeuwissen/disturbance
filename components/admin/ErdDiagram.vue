@@ -17,7 +17,7 @@ v-card(variant="outlined")
     )
   v-expand-transition
     v-card-text(v-show="!collapsed")
-      div(ref="mermaidContainer")
+      .mermaid(ref="mermaidContainer")
 </template>
 
 <script setup lang="ts">
@@ -28,17 +28,23 @@ const collapsed = ref(true)
 const mermaidContainer = ref<HTMLElement | null>(null)
 
 // Generate ERD diagram using Mermaid syntax
-const generateERD = () => {
-  const diagram = `
-    erDiagram
-      issues {
-        int id PK
+const generateERD = async () => {
+  const diagram = `erDiagram
+    ISSUES ||--o{ COMMUNICATION_LOGS : has
+    ISSUES ||--o{ ISSUE_REFERENCES : has
+    ISSUES ||--o{ IMPACTED_SYSTEMS : has
+    ISSUES ||--o{ INVOLVED_TEAMS : has
+    ISSUES ||--o{ ISSUE_TAGS : has
+    TAGS ||--o{ ISSUE_TAGS : has
+
+    ISSUES {
+        integer id PK
         string title
         string description
         string reporter
         string registrar
-        string severity
-        string status
+        string severity FK "enumerations.value"
+        string status FK "enumerations.value"
         string topic
         datetime start_timestamp
         datetime report_timestamp
@@ -46,79 +52,80 @@ const generateERD = () => {
         string mitigation_steps
         datetime created_at
         datetime updated_at
-      }
-      
-      communication_logs {
-        int id PK
-        int issue_id FK
+    }
+
+    COMMUNICATION_LOGS {
+        integer id PK
+        integer issue_id FK
         string link
         datetime datetime
         string communicator
         string system
-        bool is_internal
+        boolean is_internal
         string message
-      }
-      
-      issue_references {
-        int id PK
-        int issue_id FK
+    }
+
+    ISSUE_REFERENCES {
+        integer id PK
+        integer issue_id FK
         string url
-        string reference_type
+        string reference_type FK "enumerations.value"
         string description
-      }
-      
-      impacted_systems {
-        int id PK
-        int issue_id FK
+    }
+
+    IMPACTED_SYSTEMS {
+        integer id PK
+        integer issue_id FK
         string system_name
         string impact_description
-      }
-      
-      involved_teams {
-        int id PK
-        int issue_id FK
+    }
+
+    INVOLVED_TEAMS {
+        integer id PK
+        integer issue_id FK
         string team_name
         string role
-      }
-      
-      tags {
-        int id PK
-        string name
+    }
+
+    TAGS {
+        integer id PK
+        string name UK
         string definition
         string description
         string color_primary
         string color_secondary
         datetime created_at
         datetime updated_at
-      }
-      
-      issue_tags {
-        int issue_id FK
-        int tag_id FK
-      }
-      
-      enumerations {
-        int id PK
+    }
+
+    ISSUE_TAGS {
+        integer issue_id FK
+        integer tag_id FK
+        primary_key(issue_id, tag_id)
+    }
+
+    ENUMERATIONS {
+        integer id PK
         string category
         string value
         string description
-        int sort_order
-        bool is_active
+        integer sort_order
+        boolean is_active
         datetime created_at
         datetime updated_at
-      }
-      
-      issues ||--o{ communication_logs : has
-      issues ||--o{ issue_references : has
-      issues ||--o{ impacted_systems : has
-      issues ||--o{ involved_teams : has
-      issues ||--o{ issue_tags : has
-      tags ||--o{ issue_tags : has
-  `
+        unique_key(category, value)
+    }`
 
   // Initialize Mermaid with custom theme
-  mermaid.initialize({
+  await mermaid.initialize({
+    startOnLoad: false,
     theme: 'default',
+    er: {
+      useMaxWidth: false,
+      diagramPadding: 20,
+      entityPadding: 15,
+      fontSize: 12
+    },
     themeVariables: {
       primaryColor: '#FFB74D',
       primaryTextColor: '#000',
@@ -130,18 +137,29 @@ const generateERD = () => {
   })
 
   if (mermaidContainer.value) {
-    mermaidContainer.value.innerHTML = diagram
-    mermaid.contentLoaded()
+    const { svg } = await mermaid.render('erd-diagram', diagram)
+    mermaidContainer.value.innerHTML = svg
   }
 }
 
-onMounted(() => {
-  generateERD()
+onMounted(async () => {
+  await generateERD()
 })
 </script>
 
 <style scoped>
 .v-card-text {
   overflow-x: auto;
+}
+
+.mermaid {
+  background-color: white;
+  padding: 1rem;
+  border-radius: 4px;
+}
+
+:deep(#erd-diagram) {
+  width: 100%;
+  height: auto;
 }
 </style>

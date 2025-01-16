@@ -1,20 +1,20 @@
-.PHONY: dev build init-db install clean migrate
+.PHONY: dev build init-db install clean migrate help
 
 # Development server
 dev:
-	yarn dev
+	@yarn dev
 
 # Production build
 build:
-	yarn build
+	@yarn build
 
 # Initialize database
 init-db:
-	./scripts/init-db.sh
+	@./scripts/init-db.sh
 
 # Install dependencies
 install:
-	yarn install
+	@yarn install
 
 # Clean build artifacts and dependencies
 clean:
@@ -25,11 +25,15 @@ clean:
 
 # Git operations
 git-commit:
-	./scripts/git-commit.sh
+	@./scripts/git-commit.sh
 
 # Update changelog
 update-changelog:
-	./scripts/update-changelog.sh
+	@./scripts/update-changelog.sh
+
+# Shows which maketargets we have
+help:
+	@./scripts/help.sh
 
 # Default target
-.DEFAULT_GOAL := dev
+.DEFAULT_GOAL := help
