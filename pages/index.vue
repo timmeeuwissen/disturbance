@@ -42,18 +42,20 @@ v-container(fluid)
                 v-select(
                   v-model="issue.severity"
                   label="Severity"
-                  :items="severityOptions"
+                  :items="severityValues"
                   required
                   :rules="[v => !!v || 'Severity is required']"
+                  :loading="listsLoading"
                 )
               
               v-col(cols="12" sm="6")
                 v-select(
                   v-model="issue.status"
                   label="Status"
-                  :items="statusOptions"
+                  :items="statusValues"
                   required
                   :rules="[v => !!v || 'Status is required']"
+                  :loading="listsLoading"
                 )
               
               v-col(cols="12")
@@ -69,8 +71,7 @@ v-container(fluid)
                   v-model="issue.startTimestamp"
                   label="Start Time"
                   type="datetime-local"
-                  required
-                  :rules="[v => !!v || 'Start time is required']"
+                  :rules="timestampRules"
                 )
               
               v-col(cols="12" sm="4")
@@ -85,6 +86,7 @@ v-container(fluid)
                   v-model="issue.resolutionTimestamp"
                   label="Resolution Time"
                   type="datetime-local"
+                  :rules="timestampRules"
                 )
               
               v-col(cols="12")
@@ -167,9 +169,10 @@ v-container(fluid)
                 v-select(
                   v-model="ref.referenceType"
                   label="Type"
-                  :items="referenceTypeOptions"
+                  :items="referenceTypeValues"
                   required
                   :rules="[v => !!v || 'Type is required']"
+                  :loading="listsLoading"
                 )
               
               v-col(cols="12" sm="4")
@@ -244,20 +247,27 @@ v-container(fluid)
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed, watch } from 'vue'
 import type { 
   CreateIssueInput, 
   CreateCommunicationLogInput, 
   CreateReferenceInput, 
   CreateImpactedSystemInput, 
-  CreateInvolvedTeamInput,
-  SeverityValue,
-  StatusValue,
-  ReferenceTypeValue
+  CreateInvolvedTeamInput
 } from '~/types'
 
 const form = ref<any>(null)
 const loading = ref(false)
+
+// Lists
+const { 
+  severityValues,
+  statusValues,
+  referenceTypeValues,
+  findStatus,
+  loading: listsLoading,
+  fetchAll: fetchLists
+} = useLists()
 
 // Form data
 const issue = ref<CreateIssueInput>({
@@ -279,10 +289,22 @@ const references = ref<CreateReferenceInput[]>([])
 const impactedSystems = ref<CreateImpactedSystemInput[]>([])
 const involvedTeams = ref<CreateInvolvedTeamInput[]>([])
 
-// Options
-const severityOptions: SeverityValue[] = ['critical', 'high', 'medium', 'low']
-const statusOptions: StatusValue[] = ['open', 'investigating', 'mitigated', 'resolved', 'closed']
-const referenceTypeOptions: ReferenceTypeValue[] = ['jira', 'slack', 'system', 'other']
+// Watch for status changes to handle required timestamps
+watch(() => issue.value.status, (newStatus) => {
+  const status = findStatus(newStatus)
+  if (status?.isFinal) {
+    form.value?.validate()
+  }
+})
+
+// Validation rules
+const timestampRules = computed(() => {
+  const status = findStatus(issue.value.status)
+  if (status?.isFinal) {
+    return [(v: string | null) => !!v || 'Required for final status']
+  }
+  return []
+})
 
 // Methods
 const addCommunicationLog = () => {
@@ -344,4 +366,9 @@ const submitForm = async () => {
     loading.value = false
   }
 }
+
+// Fetch lists on mount
+onMounted(() => {
+  fetchLists()
+})
 </script>

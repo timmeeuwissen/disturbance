@@ -21,6 +21,7 @@ export interface Severity extends Omit<ListItem, 'value'> {
 
 export interface Status extends Omit<ListItem, 'value'> {
   value: StatusValue
+  isFinal: boolean
 }
 
 export interface ReferenceType extends Omit<ListItem, 'value'> {
@@ -132,6 +133,11 @@ export interface CreateIssueInput {
   reportTimestamp: string | null
   resolutionTimestamp: string | null
   mitigationSteps: string | null
+}
+
+// Helper function to check if timestamps are required
+export const requireTimestamps = (status?: Status): boolean => {
+  return !!status?.isFinal
 }
 
 export interface CreateReferenceInput {

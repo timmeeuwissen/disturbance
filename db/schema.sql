@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS statuses (
     description TEXT,
     sort_order INTEGER NOT NULL DEFAULT 0,
     is_active BOOLEAN NOT NULL DEFAULT 1,
+    is_final BOOLEAN NOT NULL DEFAULT 0,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
@@ -126,12 +127,12 @@ INSERT OR IGNORE INTO severities (value, description, sort_order) VALUES
     ('low', 'Low severity level', 4);
 
 -- Initial status data
-INSERT OR IGNORE INTO statuses (value, description, sort_order) VALUES
-    ('open', 'Issue is open', 1),
-    ('investigating', 'Issue is being investigated', 2),
-    ('mitigated', 'Issue has been mitigated', 3),
-    ('resolved', 'Issue has been resolved', 4),
-    ('closed', 'Issue is closed', 5);
+INSERT OR IGNORE INTO statuses (value, description, sort_order, is_final) VALUES
+    ('open', 'Issue is open', 1, 0),
+    ('investigating', 'Issue is being investigated', 2, 0),
+    ('mitigated', 'Issue has been mitigated', 3, 0),
+    ('resolved', 'Issue has been resolved', 4, 1),
+    ('closed', 'Issue is closed', 5, 1);
 
 -- Initial reference type data
 INSERT OR IGNORE INTO reference_types (value, description, sort_order) VALUES

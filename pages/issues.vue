@@ -29,6 +29,7 @@ v-card
           :item-title="item => item.length ? item[0] : 'All Statuses'"
           hide-details
           density="compact"
+          :loading="listsLoading"
         )
       
       v-col(cols="12" sm="3")
@@ -39,6 +40,7 @@ v-card
           :item-title="item => item.length ? item[0] : 'All Severities'"
           hide-details
           density="compact"
+          :loading="listsLoading"
         )
       
       v-col(cols="12" sm="3")
@@ -63,10 +65,10 @@ v-card
       @update:items-per-page="itemsPerPage = $event"
     )
       template(#item.status="{ item }")
-        span(:class="getStatusClass(getStatusValue(item.raw.status))") {{ getStatusValue(item.raw.status) }}
+        span(:class="getStatusClass(item.raw.status?.value)") {{ item.raw.status?.value }}
       
       template(#item.severity="{ item }")
-        span(:class="getSeverityClass(getSeverityValue(item.raw.severity))") {{ getSeverityValue(item.raw.severity) }}
+        span(:class="getSeverityClass(item.raw.severity?.value)") {{ item.raw.severity?.value }}
       
       template(#item.startTimestamp="{ item }")
         | {{ formatDate(item.raw.startTimestamp) }}
@@ -131,35 +133,25 @@ v-card
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import dayjs from 'dayjs'
-import relativeTime from 'dayjs/plugin/relativeTime'
-import type { Issue, IssueFilters, ExportOptions, StatusValue, SeverityValue } from '~/types'
-import { getStatusValue, getSeverityValue } from '~/types'
+import type { 
+  Issue, 
+  IssueFilters, 
+  ExportOptions, 
+  StatusValue, 
+  SeverityValue 
+} from '~/types'
 
-dayjs.extend(relativeTime)
+// Lists
+const { 
+  severityValues,
+  statusValues,
+  loading: listsLoading,
+  fetchAll: fetchLists
+} = useLists()
 
-// Constants
-const statusOptions: StatusValue[][] = [
-  ['open'],
-  ['investigating'],
-  ['mitigated'],
-  ['resolved'],
-  ['closed']
-]
-
-const severityOptions: SeverityValue[][] = [
-  ['critical'],
-  ['high'],
-  ['medium'],
-  ['low']
-]
-
-const timeRangeOptions = [
-  { value: 'all', title: 'All Time' },
-  { value: 'today', title: 'Today' },
-  { value: 'week', title: 'This Week' },
-  { value: 'month', title: 'This Month' },
-  { value: 'quarter', title: 'This Quarter' }
-]
+// Convert values to options format
+const severityOptions = computed(() => severityValues.value.map(v => [v]))
+const statusOptions = computed(() => statusValues.value.map(v => [v]))
 
 // Table headers
 const headers = [
@@ -189,6 +181,15 @@ const filters = ref<IssueFilters>({
   severity: [],
   topic: []
 })
+
+// Time range options
+const timeRangeOptions = [
+  { value: 'all', title: 'All Time' },
+  { value: 'today', title: 'Today' },
+  { value: 'week', title: 'This Week' },
+  { value: 'month', title: 'This Month' },
+  { value: 'quarter', title: 'This Quarter' }
+]
 
 // Methods
 const updateTimeRange = (value: string) => {
@@ -224,10 +225,10 @@ const filteredIssues = computed(() => {
       issue.description?.toLowerCase().includes(filters.value.search.toLowerCase())
     
     const matchesStatus = !filters.value.status?.length || 
-      (issue.status && filters.value.status.includes(getStatusValue(issue.status)))
+      (issue.status?.value && filters.value.status.includes(issue.status.value))
     
     const matchesSeverity = !filters.value.severity?.length || 
-      (issue.severity && filters.value.severity.includes(getSeverityValue(issue.severity)))
+      (issue.severity?.value && filters.value.severity.includes(issue.severity.value))
     
     let matchesTimeRange = true
     if (filters.value.startDate && issue.startTimestamp) {
@@ -241,12 +242,12 @@ const filteredIssues = computed(() => {
   })
 })
 
-const getStatusClass = (status: string) => {
-  return `status-${status.toLowerCase()}`
+const getStatusClass = (status?: StatusValue) => {
+  return status ? `status-${status.toLowerCase()}` : ''
 }
 
-const getSeverityClass = (severity: string) => {
-  return `severity-${severity.toLowerCase()}`
+const getSeverityClass = (severity?: SeverityValue) => {
+  return severity ? `severity-${severity.toLowerCase()}` : ''
 }
 
 const formatDate = (date: string | null) => {
@@ -307,8 +308,9 @@ const confirmExport = async () => {
   }
 }
 
-// Fetch issues on component mount
+// Fetch data on mount
 onMounted(async () => {
+  await fetchLists()
   try {
     const response = await $fetch<Issue[]>('/api/issues')
     issues.value = response

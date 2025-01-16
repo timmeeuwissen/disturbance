@@ -42,7 +42,6 @@ v-container(fluid)
 import { ref, computed } from 'vue'
 import dayjs from 'dayjs'
 import type { Issue, StatusValue, SeverityValue } from '~/types'
-import { getStatusValue, getSeverityValue } from '~/types'
 
 // State
 const issues = ref<Issue[]>([])
@@ -51,7 +50,7 @@ const issues = ref<Issue[]>([])
 const statusChartOption = computed(() => {
   const statusCounts = new Map<StatusValue, number>()
   issues.value.forEach(issue => {
-    const status = getStatusValue(issue.status)
+    const status = issue.status?.value
     if (status) {
       statusCounts.set(status, (statusCounts.get(status) || 0) + 1)
     }
@@ -76,7 +75,7 @@ const statusChartOption = computed(() => {
 const severityChartOption = computed(() => {
   const severityCounts = new Map<SeverityValue, number>()
   issues.value.forEach(issue => {
-    const severity = getSeverityValue(issue.severity)
+    const severity = issue.severity?.value
     if (severity) {
       severityCounts.set(severity, (severityCounts.get(severity) || 0) + 1)
     }
@@ -102,15 +101,13 @@ const resolutionTimeChartOption = computed(() => {
   const resolutionTimes = new Map<StatusValue, number[]>()
   
   issues.value.forEach(issue => {
-    if (!issue.startTimestamp || !issue.resolutionTimestamp) return
+    if (!issue.startTimestamp || !issue.resolutionTimestamp || !issue.status?.value) return
     
-    const status = getStatusValue(issue.status)
-    if (status) {
-      const time = dayjs(issue.resolutionTimestamp).diff(issue.startTimestamp, 'hour')
-      const times = resolutionTimes.get(status) || []
-      times.push(time)
-      resolutionTimes.set(status, times)
-    }
+    const status = issue.status.value
+    const time = dayjs(issue.resolutionTimestamp).diff(issue.startTimestamp, 'hour')
+    const times = resolutionTimes.get(status) || []
+    times.push(time)
+    resolutionTimes.set(status, times)
   })
 
   return {
@@ -140,15 +137,13 @@ const severityTimeChartOption = computed(() => {
   const resolutionTimes = new Map<SeverityValue, number[]>()
   
   issues.value.forEach(issue => {
-    if (!issue.startTimestamp || !issue.resolutionTimestamp) return
+    if (!issue.startTimestamp || !issue.resolutionTimestamp || !issue.severity?.value) return
     
-    const severity = getSeverityValue(issue.severity)
-    if (severity) {
-      const time = dayjs(issue.resolutionTimestamp).diff(issue.startTimestamp, 'hour')
-      const times = resolutionTimes.get(severity) || []
-      times.push(time)
-      resolutionTimes.set(severity, times)
-    }
+    const severity = issue.severity.value
+    const time = dayjs(issue.resolutionTimestamp).diff(issue.startTimestamp, 'hour')
+    const times = resolutionTimes.get(severity) || []
+    times.push(time)
+    resolutionTimes.set(severity, times)
   })
 
   return {
@@ -176,22 +171,16 @@ const severityTimeChartOption = computed(() => {
 
 const timelineChartOption = computed(() => {
   const timelineData = issues.value
-    .filter(issue => issue.startTimestamp)
-    .map(issue => {
-      const status = getStatusValue(issue.status)
-      const severity = getSeverityValue(issue.severity)
-      if (!status || !severity) return null
-      return {
-        name: issue.title,
-        value: [
-          dayjs(issue.startTimestamp).toDate(),
-          dayjs(issue.resolutionTimestamp || new Date()).toDate(),
-          status,
-          severity
-        ]
-      }
-    })
-    .filter((item): item is NonNullable<typeof item> => item !== null)
+    .filter(issue => issue.startTimestamp && issue.status?.value && issue.severity?.value)
+    .map(issue => ({
+      name: issue.title,
+      value: [
+        dayjs(issue.startTimestamp).toDate(),
+        dayjs(issue.resolutionTimestamp || new Date()).toDate(),
+        issue.status!.value,
+        issue.severity!.value
+      ]
+    }))
     .sort((a, b) => (a.value[0] as Date).getTime() - (b.value[0] as Date).getTime())
 
   return {
