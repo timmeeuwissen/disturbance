@@ -26,7 +26,9 @@
     "@mdi/font": "^7.4.47",
     "@nuxtjs/vuetify": "^1.12.3",
     "@types/better-sqlite3": "^7.6.12",
+    "sass": "^1.83.4",
     "sass-embedded": "^1.83.4",
+    "vite-plugin-vuetify": "^2.0.4",
     "vuetify": "^3.7.6"
   }
 }

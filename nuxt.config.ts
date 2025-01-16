@@ -14,22 +14,15 @@ export default defineNuxtConfig({
     transpile: ['vuetify']
   },
 
-  vuetify: {
-    moduleOptions: {
-      /* module specific options */
-    },
-    vuetifyOptions: {
-      /* vuetify options */
-      ssr: false
-    }
-  },
-
   vite: {
     define: {
       'process.env.DEBUG': false,
     },
+    ssr: {
+      noExternal: ['vuetify']
+    },
     clearScreen: false,
-    logLevel: 'warning',
+    logLevel: 'info',
     server: {
       hmr: {
         overlay: true
