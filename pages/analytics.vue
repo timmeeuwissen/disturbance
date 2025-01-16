@@ -34,13 +34,7 @@ div
           v-select(
             v-model="filters.period"
             label="Time Period"
-            :items="[
-              { value: '7d', title: 'Last 7 Days' },
-              { value: '30d', title: 'Last 30 Days' },
-              { value: '90d', title: 'Last 90 Days' },
-              { value: '1y', title: 'Last Year' },
-              { value: 'all', title: 'All Time' }
-            ]"
+            :items="[{ value: '7d', title: 'Last 7 Days' }, { value: '30d', title: 'Last 30 Days' }, { value: '90d', title: 'Last 90 Days' }, { value: '1y', title: 'Last Year' }, { value: 'all', title: 'All Time' }]"
             item-title="title"
             item-value="value"
           )

@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 ## [2025-01-16]
 
+- Fixed pug template array syntax in v-select components
+
+## [2025-01-16]
+
 - Updated Vuetify configuration to work with client-side rendering
 
 ## [2025-01-16]
