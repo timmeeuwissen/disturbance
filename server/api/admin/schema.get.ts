@@ -26,14 +26,20 @@ export default defineEventHandler(async () => {
       if (trimmedLine.includes('FOREIGN KEY')) {
         const fkMatch = trimmedLine.match(/FOREIGN KEY\s*\((\w+)\)\s*REFERENCES\s*(\w+)/)
         if (fkMatch) {
-          foreignKeys.push(`${tableName} ||--o{ ${fkMatch[2]} : references`)
+          // Use proper Mermaid relationship syntax
+          foreignKeys.push(`${tableName} }|--|| ${fkMatch[2]} : has`)
         }
         continue
       }
 
-      // Parse regular column
+      // Skip CHECK constraints and other non-column lines
+      if (trimmedLine.startsWith('CHECK') || 
+          trimmedLine.startsWith('PRIMARY') || 
+          trimmedLine.startsWith('FOREIGN') || 
+          trimmedLine.startsWith('UNIQUE')) continue
+
       const parts = trimmedLine.split(/\s+/)
-      if (parts[0] === 'PRIMARY' || parts[0] === 'FOREIGN' || parts[0] === 'UNIQUE') continue
+      if (!parts[0] || !parts[1]) continue
 
       const name = parts[0]
       let type = parts[1]
@@ -50,12 +56,15 @@ export default defineEventHandler(async () => {
         }
       }
 
-      if (type === 'INTEGER') type = 'integer'
+      // Convert SQL types to Mermaid types
+      if (type === 'INTEGER') type = 'int'
       else if (type === 'TEXT') type = 'string'
       else if (type === 'DATETIME') type = 'datetime'
-      else if (type === 'BOOLEAN') type = 'boolean'
+      else if (type === 'BOOLEAN') type = 'bool'
 
-      columns.push({ name, type, constraints })
+      // Convert snake_case to camelCase for Mermaid compatibility
+      const camelName = name.replace(/_([a-z])/g, (g) => g[1].toUpperCase())
+      columns.push({ name: camelName, type, constraints })
     }
 
     tables[tableName] = { columns, foreignKeys }
@@ -80,7 +89,7 @@ export default defineEventHandler(async () => {
   Object.entries(tables).forEach(([tableName, table]) => {
     mermaidCode += `    ${tableName} {\n`
     table.columns.forEach((col: any) => {
-      const constraint = col.constraints ? ` ${col.constraints}` : ''
+      const constraint = col.constraints ? ` "${col.constraints}"` : ''
       mermaidCode += `        ${col.type} ${col.name}${constraint}\n`
     })
     mermaidCode += '    }\n\n'

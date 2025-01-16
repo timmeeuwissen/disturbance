@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 ## [2025-01-16]
 
+- Added dynamic ERD diagram generation from database schema file
+
+## [2025-01-16]
+
 - Enhanced database schema visualization with interactive ERD diagram using Mermaid.js
 
 ## [2025-01-16]
