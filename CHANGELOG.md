@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 ## [2025-01-16]
 
+- Added list sorting functionality:n- Added sort_order field to list tablesn- Added drag and drop sorting UIn- Added API endpoint for updating sort ordern- Updated list display to respect sort ordern- Replaced toggles with chips for better UX
+
+## [2025-01-16]
+
 - Added default value support to new issue page:n- Added useLists composable for managing lists and defaultsn- Updated new issue page to use default valuesn- Added proper type definitionsn- Added error handling
 
 ## [2025-01-16]

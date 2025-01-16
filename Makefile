@@ -1,39 +1,34 @@
-.PHONY: dev build init-db install clean migrate help
+.PHONY: dev build init-db reset-db load-fixtures help
 
-# Development server
-dev:
-	@yarn dev
-
-# Production build
-build:
-	@yarn build
-
-# Initialize database
-init-db:
-	@./scripts/init-db.sh
-
-# Install dependencies
-install:
-	@yarn install
-
-# Clean build artifacts and dependencies
-clean:
-	rm -rf .nuxt
-	rm -rf node_modules
-	rm -rf dist
-	rm -f db/disturbance.db
-
-# Git operations
-git-commit:
-	@./scripts/git-commit.sh
-
-# Update changelog
-update-changelog:
-	@./scripts/update-changelog.sh
-
-# Shows which maketargets we have
-help:
-	@./scripts/help.sh
+# Colors
+YELLOW := \033[1;33m
+GREEN := \033[0;32m
+NC := \033[0m
 
 # Default target
 .DEFAULT_GOAL := help
+
+dev: ## Start development server
+	@npm run dev
+
+build: ## Build for production
+	@npm run build
+
+init-db: ## Initialize database with schema
+	@chmod +x scripts/init-db.sh
+	@./scripts/init-db.sh
+
+reset-db: ## Reset database and load fixtures (requires confirmation)
+	@chmod +x scripts/reset-db.sh
+	@./scripts/reset-db.sh
+
+load-fixtures: ## Load sample data into database
+	@chmod +x scripts/load-fixtures.sh
+	@./scripts/load-fixtures.sh
+
+help: ## Show this help
+	@echo "Usage: make [target]"
+	@echo ""
+	@echo "Targets:"
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  $(YELLOW)%-15s$(NC) %s\n", $$1, $$2}'
+	@echo ""
