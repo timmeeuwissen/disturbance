@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 ## [2025-01-16]
 
+- Fixed Pinia configuration:n- Added proper module configurationn- Fixed auto-imports setupn- Added TypeScript strict mode
+
+## [2025-01-16]
+
 - Migrated admin state management to Pinia:n- Added Pinia store for admin staten- Updated useAdmin composable to use Pinia storen- Added persistence for admin staten- Improved index page with conditional admin section
 
 ## [2025-01-16]

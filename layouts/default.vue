@@ -1,15 +1,15 @@
 <template lang="pug">
-v-app(:theme="isAdmin ? adminTheme : undefined")
+v-app(:theme="admin.isAdmin ? admin.adminTheme : undefined")
   v-app-bar(color="primary")
     v-app-bar-title Disturbance Monitor
     v-spacer
     v-switch(
-      v-model="isAdmin"
+      :model-value="admin.isAdmin"
       color="warning"
       hide-details
       inset
       label="Admin Mode"
-      @change="handleAdminChange"
+      @update:model-value="admin.toggleAdmin"
     )
 
   v-navigation-drawer(permanent)
@@ -18,7 +18,7 @@ v-app(:theme="isAdmin ? adminTheme : undefined")
       v-list-item(to="/new" prepend-icon="mdi-new-box" title="New")
       v-list-item(to="/issues" prepend-icon="mdi-alert" title="Issues")
       v-list-item(to="/analytics" prepend-icon="mdi-chart-bar" title="Analytics")
-      template(v-if="isAdmin")
+      template(v-if="admin.isAdmin")
         v-divider
         v-list-subheader Admin
         v-list-item(
@@ -45,18 +45,13 @@ import { useAdmin } from '~/composables/useAdmin'
 import { useRouter } from '#app'
 
 const router = useRouter()
-const { isAdmin, adminTheme } = useAdmin()
+const admin = useAdmin()
 
-const handleAdminChange = () => {
+// Watch for admin mode changes to handle navigation
+watch(() => admin.isAdmin, (newValue) => {
   // If admin mode is disabled and we're on an admin page, redirect to home
-  if (!isAdmin.value && router.currentRoute.value.path.startsWith('/admin')) {
+  if (!newValue && router.currentRoute.value.path.startsWith('/admin')) {
     router.push('/')
   }
-}
-
-// Watch for admin mode changes to update theme
-watch(isAdmin, (newValue) => {
-  // Force theme update by triggering a re-render
-  nextTick()
 })
 </script>
