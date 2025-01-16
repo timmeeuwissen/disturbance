@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 ## [2025-01-16]
 
+- Fixed database initialization:n- Added execute permissions to init-db scriptn- Initialized database with new schema including default valuesn- Added triggers for default value management
+
+## [2025-01-16]
+
 - Added default value support for lists:n- Added default flag to database scheman- Added triggers to ensure single default per typen- Updated API endpoints to handle default valuesn- Added UI controls for managing default values
 
 ## [2025-01-16]

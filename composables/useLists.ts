@@ -1,128 +1,58 @@
-import type { Severity, Status, ReferenceType, SqlQueryResult } from '~/types'
+import { ref, onMounted, inject } from 'vue'
+
+export interface ListItem {
+  id: number
+  name: string
+  is_final?: boolean
+  is_default?: boolean
+}
 
 export const useLists = () => {
-  const severities = ref<Severity[]>([])
-  const statuses = ref<Status[]>([])
-  const referenceTypes = ref<ReferenceType[]>([])
-  const loading = ref(false)
+  const statuses = ref<ListItem[]>([])
+  const severities = ref<ListItem[]>([])
+  const referenceTypes = ref<ListItem[]>([])
 
-  const fetchSeverities = async () => {
-    try {
-      const response = await $fetch<SqlQueryResult>('/api/admin/sql', {
-        method: 'POST',
-        body: {
-          query: 'SELECT * FROM severities WHERE is_active = 1 ORDER BY sort_order'
-        }
-      })
-      severities.value = response.rows.map(row => ({
-        id: row.id,
-        value: row.value,
-        description: row.description,
-        sortOrder: row.sort_order,
-        isActive: row.is_active === 1,
-        createdAt: row.created_at,
-        updatedAt: row.updated_at
-      }))
-    } catch (error) {
-      console.error('Error fetching severities:', error)
-      const showMessage = inject<(text: string, color?: 'success' | 'error') => void>('showMessage')
-      showMessage?.('Error loading severities', 'error')
-    }
-  }
+  const defaultStatus = ref<ListItem | null>(null)
+  const defaultSeverity = ref<ListItem | null>(null)
+  const defaultReferenceType = ref<ListItem | null>(null)
 
-  const fetchStatuses = async () => {
+  const loadLists = async () => {
     try {
-      const response = await $fetch<SqlQueryResult>('/api/admin/sql', {
-        method: 'POST',
-        body: {
-          query: 'SELECT * FROM statuses WHERE is_active = 1 ORDER BY sort_order'
-        }
-      })
-      statuses.value = response.rows.map(row => ({
-        id: row.id,
-        value: row.value,
-        description: row.description,
-        sortOrder: row.sort_order,
-        isActive: row.is_active === 1,
-        isFinal: row.is_final === 1,
-        createdAt: row.created_at,
-        updatedAt: row.updated_at
-      }))
-    } catch (error) {
-      console.error('Error fetching statuses:', error)
-      const showMessage = inject<(text: string, color?: 'success' | 'error') => void>('showMessage')
-      showMessage?.('Error loading statuses', 'error')
-    }
-  }
-
-  const fetchReferenceTypes = async () => {
-    try {
-      const response = await $fetch<SqlQueryResult>('/api/admin/sql', {
-        method: 'POST',
-        body: {
-          query: 'SELECT * FROM reference_types WHERE is_active = 1 ORDER BY sort_order'
-        }
-      })
-      referenceTypes.value = response.rows.map(row => ({
-        id: row.id,
-        value: row.value,
-        description: row.description,
-        sortOrder: row.sort_order,
-        isActive: row.is_active === 1,
-        createdAt: row.created_at,
-        updatedAt: row.updated_at
-      }))
-    } catch (error) {
-      console.error('Error fetching reference types:', error)
-      const showMessage = inject<(text: string, color?: 'success' | 'error') => void>('showMessage')
-      showMessage?.('Error loading reference types', 'error')
-    }
-  }
-
-  const fetchAll = async () => {
-    loading.value = true
-    try {
-      await Promise.all([
-        fetchSeverities(),
-        fetchStatuses(),
-        fetchReferenceTypes()
+      const [statusesData, severitiesData, referenceTypesData] = await Promise.all([
+        $fetch<ListItem[]>('/api/admin/lists/statuses'),
+        $fetch<ListItem[]>('/api/admin/lists/severities'),
+        $fetch<ListItem[]>('/api/admin/lists/reference-types')
       ])
-    } finally {
-      loading.value = false
+
+      statuses.value = statusesData
+      severities.value = severitiesData
+      referenceTypes.value = referenceTypesData
+
+      // Set defaults
+      defaultStatus.value = statusesData.find(s => s.is_default) || null
+      defaultSeverity.value = severitiesData.find(s => s.is_default) || null
+      defaultReferenceType.value = referenceTypesData.find(t => t.is_default) || null
+    } catch (error: any) {
+      console.error('Error loading lists:', error)
+      const showMessage = inject<(text: string, color?: 'success' | 'error') => void>('showMessage')
+      showMessage?.('Error loading lists', 'error')
     }
   }
 
-  // Computed properties for values only
-  const severityValues = computed(() => severities.value.map(s => s.value))
-  const statusValues = computed(() => statuses.value.map(s => s.value))
-  const referenceTypeValues = computed(() => referenceTypes.value.map(r => r.value))
-
-  // Helper functions
-  const findStatus = (value: string) => statuses.value.find(s => s.value === value)
-  const findSeverity = (value: string) => severities.value.find(s => s.value === value)
-  const findReferenceType = (value: string) => referenceTypes.value.find(r => r.value === value)
+  onMounted(loadLists)
 
   return {
-    // Raw data
-    severities,
+    // Lists
     statuses,
+    severities,
     referenceTypes,
-    loading,
-
-    // Values only
-    severityValues,
-    statusValues,
-    referenceTypeValues,
-
-    // Fetch functions
-    fetchAll,
-    fetchSeverities,
-    fetchStatuses,
-    fetchReferenceTypes,
-
-    // Helper functions
-    findStatus,
-    findSeverity,
-    findReferenceType
+    
+    // Defaults
+    defaultStatus,
+    defaultSeverity,
+    defaultReferenceType,
+    
+    // Actions
+    loadLists
   }
 }
