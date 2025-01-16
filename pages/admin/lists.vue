@@ -1,372 +1,332 @@
-<script lang="ts">
-definePageMeta({
-  middleware: ['admin']
-})
-</script>
-
 <template lang="pug">
 v-container(fluid)
   v-row
     v-col(cols="12")
-      h1.text-warning.mb-4 Lists Management
+      h1.text-warning.mb-4 List Management
 
   v-row
-    v-col(cols="12" md="6")
-      v-card
-        v-card-title Enumerations
-        v-card-text
-          v-select(
-            v-model="selectedCategory"
-            label="Category"
-            :items="['severity', 'status', 'reference_type']"
-            @update:model-value="loadEnumerations"
-          )
-          v-data-table(
-            v-if="selectedCategory"
-            :headers="enumHeaders"
-            :items="enumerations"
-            :items-per-page="10"
-          )
-            template(#item.is_active="{ item }")
-              v-switch(
-                v-model="item.raw.is_active"
-                color="warning"
-                hide-details
-                @change="updateEnumeration(item.raw)"
-              )
-            template(#item.actions="{ item }")
-              v-btn(
-                icon="mdi-pencil"
-                variant="text"
-                size="small"
-                color="warning"
-                @click="editEnumeration(item.raw)"
-              )
-          v-btn.mt-4(
+    v-col(cols="12" md="6" lg="4")
+      v-card(variant="outlined")
+        v-card-title
+          span Statuses
+          v-spacer
+          v-btn(
             color="warning"
             prepend-icon="mdi-plus"
-            @click="showEnumDialog = true"
-          ) Add Value
-
-    v-col(cols="12" md="6")
-      v-card
-        v-card-title Tags
+            size="small"
+            @click="addStatus"
+          ) Add
         v-card-text
-          v-data-table(
-            :headers="tagHeaders"
-            :items="tags"
-            :items-per-page="10"
-          )
-            template(#item.colors="{ item }")
-              v-chip(
-                :color="item.raw.color_primary"
-                :text-color="getContrastColor(item.raw.color_primary)"
-              ) Primary
-              v-chip.ml-2(
-                :color="item.raw.color_secondary"
-                :text-color="getContrastColor(item.raw.color_secondary)"
-              ) Secondary
-            template(#item.actions="{ item }")
-              v-btn(
-                icon="mdi-pencil"
-                variant="text"
-                size="small"
-                color="warning"
-                @click="editTag(item.raw)"
-              )
-          v-btn.mt-4(
+          v-list
+            v-list-item(
+              v-for="status in statuses"
+              :key="status.id"
+              :title="status.name"
+            )
+              template(#append)
+                v-switch(
+                  v-model="status.is_final"
+                  color="warning"
+                  hide-details
+                  density="compact"
+                  label="Final"
+                  @change="updateStatus(status)"
+                )
+                v-btn(
+                  icon="mdi-pencil"
+                  variant="text"
+                  size="small"
+                  class="ml-2"
+                  @click="editStatus(status)"
+                )
+                v-btn(
+                  icon="mdi-delete"
+                  variant="text"
+                  size="small"
+                  color="error"
+                  @click="deleteStatus(status)"
+                )
+
+    v-col(cols="12" md="6" lg="4")
+      v-card(variant="outlined")
+        v-card-title
+          span Severities
+          v-spacer
+          v-btn(
             color="warning"
             prepend-icon="mdi-plus"
-            @click="showTagDialog = true"
-          ) Add Tag
+            size="small"
+            @click="addSeverity"
+          ) Add
+        v-card-text
+          v-list
+            v-list-item(
+              v-for="severity in severities"
+              :key="severity.id"
+              :title="severity.name"
+            )
+              template(#append)
+                v-btn(
+                  icon="mdi-pencil"
+                  variant="text"
+                  size="small"
+                  @click="editSeverity(severity)"
+                )
+                v-btn(
+                  icon="mdi-delete"
+                  variant="text"
+                  size="small"
+                  color="error"
+                  @click="deleteSeverity(severity)"
+                )
 
-  // Enumeration Dialog
-  v-dialog(v-model="showEnumDialog" max-width="500px")
+    v-col(cols="12" md="6" lg="4")
+      v-card(variant="outlined")
+        v-card-title
+          span Reference Types
+          v-spacer
+          v-btn(
+            color="warning"
+            prepend-icon="mdi-plus"
+            size="small"
+            @click="addReferenceType"
+          ) Add
+        v-card-text
+          v-list
+            v-list-item(
+              v-for="type in referenceTypes"
+              :key="type.id"
+              :title="type.name"
+            )
+              template(#append)
+                v-btn(
+                  icon="mdi-pencil"
+                  variant="text"
+                  size="small"
+                  @click="editReferenceType(type)"
+                )
+                v-btn(
+                  icon="mdi-delete"
+                  variant="text"
+                  size="small"
+                  color="error"
+                  @click="deleteReferenceType(type)"
+                )
+
+  // Edit Dialog
+  v-dialog(v-model="dialog.show" max-width="500")
     v-card
-      v-card-title {{ editingEnum ? 'Edit' : 'Add' }} Enumeration Value
+      v-card-title {{ dialog.title }}
       v-card-text
-        v-form(ref="enumForm")
-          v-text-field(
-            v-model="enumFormData.value"
-            label="Value"
-            required
-            :rules="[v => !!v || 'Value is required']"
-          )
-          v-text-field(
-            v-model="enumFormData.description"
-            label="Description"
-          )
-          v-text-field(
-            v-model.number="enumFormData.sortOrder"
-            label="Sort Order"
-            type="number"
-            required
-            :rules="[v => !!v || 'Sort order is required']"
-          )
-          v-switch(
-            v-model="enumFormData.isActive"
-            label="Active"
-            color="warning"
-          )
+        v-text-field(
+          v-model="dialog.item.name"
+          label="Name"
+          :rules="[v => !!v || 'Name is required']"
+        )
+        v-switch(
+          v-if="dialog.type === 'status'"
+          v-model="dialog.item.is_final"
+          color="warning"
+          hide-details
+          label="Final Status"
+        )
       v-card-actions
         v-spacer
         v-btn(
-          color="secondary"
+          color="error"
           variant="text"
-          @click="showEnumDialog = false"
+          @click="dialog.show = false"
         ) Cancel
         v-btn(
           color="warning"
-          @click="saveEnumeration"
-        ) Save
-
-  // Tag Dialog
-  v-dialog(v-model="showTagDialog" max-width="500px")
-    v-card
-      v-card-title {{ editingTag ? 'Edit' : 'Add' }} Tag
-      v-card-text
-        v-form(ref="tagForm")
-          v-text-field(
-            v-model="tagFormData.name"
-            label="Name"
-            required
-            :rules="[v => !!v || 'Name is required']"
-          )
-          v-text-field(
-            v-model="tagFormData.definition"
-            label="Definition"
-            required
-            :rules="[v => !!v || 'Definition is required']"
-          )
-          v-textarea(
-            v-model="tagFormData.description"
-            label="Description"
-            rows="3"
-          )
-          v-color-picker(
-            v-model="tagFormData.colorPrimary"
-            label="Primary Color"
-            mode="hex"
-            hide-inputs
-            show-swatches
-            swatches-max-height="200"
-          )
-          v-color-picker(
-            v-model="tagFormData.colorSecondary"
-            label="Secondary Color"
-            mode="hex"
-            hide-inputs
-            show-swatches
-            swatches-max-height="200"
-          )
-      v-card-actions
-        v-spacer
-        v-btn(
-          color="secondary"
-          variant="text"
-          @click="showTagDialog = false"
-        ) Cancel
-        v-btn(
-          color="warning"
-          @click="saveTag"
+          @click="saveItem"
         ) Save
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import type { Enumeration, Tag, SqlQueryResult } from '~/types'
+import { ref, reactive, onMounted } from 'vue'
 
-interface FormRef {
-  validate: () => Promise<{ valid: boolean }>
+interface ListItem {
+  id: number
+  name: string
+  is_final?: boolean
 }
 
 // State
-const selectedCategory = ref('')
-const enumerations = ref<Enumeration[]>([])
-const tags = ref<Tag[]>([])
-const showEnumDialog = ref(false)
-const showTagDialog = ref(false)
-const editingEnum = ref<Enumeration | null>(null)
-const editingTag = ref<Tag | null>(null)
-const enumFormData = ref<Partial<Enumeration>>({
-  value: '',
-  description: '',
-  sortOrder: 0,
-  isActive: true
+const statuses = ref<ListItem[]>([])
+const severities = ref<ListItem[]>([])
+const referenceTypes = ref<ListItem[]>([])
+
+// Dialog state
+const dialog = reactive({
+  show: false,
+  title: '',
+  type: '' as 'status' | 'severity' | 'reference',
+  item: {} as ListItem,
+  isNew: false
 })
-const tagFormData = ref<Partial<Tag>>({
-  name: '',
-  definition: '',
-  description: '',
-  colorPrimary: '#FF9800',
-  colorSecondary: '#FFB74D'
-})
-const enumForm = ref<FormRef | null>(null)
-const tagForm = ref<FormRef | null>(null)
 
-// Table headers
-const enumHeaders = [
-  { title: 'Value', key: 'value' },
-  { title: 'Description', key: 'description' },
-  { title: 'Sort Order', key: 'sort_order' },
-  { title: 'Active', key: 'is_active' },
-  { title: 'Actions', key: 'actions', sortable: false }
-]
-
-const tagHeaders = [
-  { title: 'Name', key: 'name' },
-  { title: 'Definition', key: 'definition' },
-  { title: 'Colors', key: 'colors', sortable: false },
-  { title: 'Actions', key: 'actions', sortable: false }
-]
-
-// Methods
-const loadEnumerations = async () => {
-  if (!selectedCategory.value) return
+// Load data
+const loadData = async () => {
   try {
-    const response = await $fetch<SqlQueryResult>('/api/admin/sql', {
-      method: 'POST',
-      body: {
-        query: `SELECT * FROM enumerations WHERE category = '${selectedCategory.value}' ORDER BY sort_order`
-      }
-    })
-    enumerations.value = response.rows
-  } catch (error) {
-    console.error('Error loading enumerations:', error)
+    const [statusesData, severitiesData, referenceTypesData] = await Promise.all([
+      $fetch('/api/admin/lists/statuses'),
+      $fetch('/api/admin/lists/severities'),
+      $fetch('/api/admin/lists/reference-types')
+    ])
+    statuses.value = statusesData
+    severities.value = severitiesData
+    referenceTypes.value = referenceTypesData
+  } catch (error: any) {
+    console.error('Error loading lists:', error)
+    const showMessage = inject<(text: string, color?: 'success' | 'error') => void>('showMessage')
+    showMessage?.('Error loading lists', 'error')
   }
 }
 
-const loadTags = async () => {
+onMounted(loadData)
+
+// Status actions
+const addStatus = () => {
+  dialog.show = true
+  dialog.title = 'Add Status'
+  dialog.type = 'status'
+  dialog.item = { id: 0, name: '', is_final: false }
+  dialog.isNew = true
+}
+
+const editStatus = (status: ListItem) => {
+  dialog.show = true
+  dialog.title = 'Edit Status'
+  dialog.type = 'status'
+  dialog.item = { ...status }
+  dialog.isNew = false
+}
+
+const updateStatus = async (status: ListItem) => {
   try {
-    const response = await $fetch<SqlQueryResult>('/api/admin/sql', {
-      method: 'POST',
-      body: {
-        query: 'SELECT * FROM tags ORDER BY name'
-      }
+    await $fetch(`/api/admin/lists/statuses/${status.id}`, {
+      method: 'PUT',
+      body: status
     })
-    tags.value = response.rows
-  } catch (error) {
-    console.error('Error loading tags:', error)
+    await loadData()
+  } catch (error: any) {
+    console.error('Error updating status:', error)
+    const showMessage = inject<(text: string, color?: 'success' | 'error') => void>('showMessage')
+    showMessage?.('Error updating status', 'error')
   }
 }
 
-const editEnumeration = (enumeration: Enumeration) => {
-  editingEnum.value = enumeration
-  enumFormData.value = {
-    value: enumeration.value,
-    description: enumeration.description,
-    sortOrder: enumeration.sortOrder,
-    isActive: enumeration.isActive
+const deleteStatus = async (status: ListItem) => {
+  if (confirm(`Are you sure you want to delete "${status.name}"?`)) {
+    try {
+      await $fetch(`/api/admin/lists/statuses/${status.id}`, {
+        method: 'DELETE'
+      })
+      await loadData()
+    } catch (error: any) {
+      console.error('Error deleting status:', error)
+      const showMessage = inject<(text: string, color?: 'success' | 'error') => void>('showMessage')
+      showMessage?.('Error deleting status', 'error')
+    }
   }
-  showEnumDialog.value = true
 }
 
-const editTag = (tag: Tag) => {
-  editingTag.value = tag
-  tagFormData.value = {
-    name: tag.name,
-    definition: tag.definition,
-    description: tag.description,
-    colorPrimary: tag.colorPrimary,
-    colorSecondary: tag.colorSecondary
-  }
-  showTagDialog.value = true
+// Severity actions
+const addSeverity = () => {
+  dialog.show = true
+  dialog.title = 'Add Severity'
+  dialog.type = 'severity'
+  dialog.item = { id: 0, name: '' }
+  dialog.isNew = true
 }
 
-const saveEnumeration = async () => {
-  const result = await enumForm.value?.validate()
-  if (!result?.valid) return
+const editSeverity = (severity: ListItem) => {
+  dialog.show = true
+  dialog.title = 'Edit Severity'
+  dialog.type = 'severity'
+  dialog.item = { ...severity }
+  dialog.isNew = false
+}
+
+const deleteSeverity = async (severity: ListItem) => {
+  if (confirm(`Are you sure you want to delete "${severity.name}"?`)) {
+    try {
+      await $fetch(`/api/admin/lists/severities/${severity.id}`, {
+        method: 'DELETE'
+      })
+      await loadData()
+    } catch (error: any) {
+      console.error('Error deleting severity:', error)
+      const showMessage = inject<(text: string, color?: 'success' | 'error') => void>('showMessage')
+      showMessage?.('Error deleting severity', 'error')
+    }
+  }
+}
+
+// Reference Type actions
+const addReferenceType = () => {
+  dialog.show = true
+  dialog.title = 'Add Reference Type'
+  dialog.type = 'reference'
+  dialog.item = { id: 0, name: '' }
+  dialog.isNew = true
+}
+
+const editReferenceType = (type: ListItem) => {
+  dialog.show = true
+  dialog.title = 'Edit Reference Type'
+  dialog.type = 'reference'
+  dialog.item = { ...type }
+  dialog.isNew = false
+}
+
+const deleteReferenceType = async (type: ListItem) => {
+  if (confirm(`Are you sure you want to delete "${type.name}"?`)) {
+    try {
+      await $fetch(`/api/admin/lists/reference-types/${type.id}`, {
+        method: 'DELETE'
+      })
+      await loadData()
+    } catch (error: any) {
+      console.error('Error deleting reference type:', error)
+      const showMessage = inject<(text: string, color?: 'success' | 'error') => void>('showMessage')
+      showMessage?.('Error deleting reference type', 'error')
+    }
+  }
+}
+
+// Save dialog item
+const saveItem = async () => {
+  if (!dialog.item.name) return
 
   try {
-    const query = editingEnum.value
-      ? `UPDATE enumerations SET 
-          value = '${enumFormData.value.value}',
-          description = '${enumFormData.value.description || ''}',
-          sort_order = ${enumFormData.value.sortOrder},
-          is_active = ${enumFormData.value.isActive ? 1 : 0}
-        WHERE id = ${editingEnum.value.id}`
-      : `INSERT INTO enumerations (category, value, description, sort_order, is_active)
-        VALUES (
-          '${selectedCategory.value}',
-          '${enumFormData.value.value}',
-          '${enumFormData.value.description || ''}',
-          ${enumFormData.value.sortOrder},
-          ${enumFormData.value.isActive ? 1 : 0}
-        )`
+    const endpoint = dialog.type === 'status' ? 'statuses' :
+      dialog.type === 'severity' ? 'severities' :
+      'reference-types'
 
-    await $fetch('/api/admin/sql', {
-      method: 'POST',
-      body: { query }
-    })
+    if (dialog.isNew) {
+      await $fetch(`/api/admin/lists/${endpoint}`, {
+        method: 'POST',
+        body: dialog.item
+      })
+    } else {
+      await $fetch(`/api/admin/lists/${endpoint}/${dialog.item.id}`, {
+        method: 'PUT',
+        body: dialog.item
+      })
+    }
 
-    showEnumDialog.value = false
-    loadEnumerations()
-  } catch (error) {
-    console.error('Error saving enumeration:', error)
+    dialog.show = false
+    await loadData()
+  } catch (error: any) {
+    console.error('Error saving item:', error)
+    const showMessage = inject<(text: string, color?: 'success' | 'error') => void>('showMessage')
+    showMessage?.('Error saving item', 'error')
   }
 }
 
-const saveTag = async () => {
-  const result = await tagForm.value?.validate()
-  if (!result?.valid) return
-
-  try {
-    const query = editingTag.value
-      ? `UPDATE tags SET 
-          name = '${tagFormData.value.name}',
-          definition = '${tagFormData.value.definition}',
-          description = '${tagFormData.value.description || ''}',
-          color_primary = '${tagFormData.value.colorPrimary}',
-          color_secondary = '${tagFormData.value.colorSecondary}'
-        WHERE id = ${editingTag.value.id}`
-      : `INSERT INTO tags (name, definition, description, color_primary, color_secondary)
-        VALUES (
-          '${tagFormData.value.name}',
-          '${tagFormData.value.definition}',
-          '${tagFormData.value.description || ''}',
-          '${tagFormData.value.colorPrimary}',
-          '${tagFormData.value.colorSecondary}'
-        )`
-
-    await $fetch('/api/admin/sql', {
-      method: 'POST',
-      body: { query }
-    })
-
-    showTagDialog.value = false
-    loadTags()
-  } catch (error) {
-    console.error('Error saving tag:', error)
-  }
-}
-
-const updateEnumeration = async (enumeration: Enumeration) => {
-  try {
-    await $fetch('/api/admin/sql', {
-      method: 'POST',
-      body: {
-        query: `UPDATE enumerations SET is_active = ${enumeration.isActive ? 1 : 0} WHERE id = ${enumeration.id}`
-      }
-    })
-  } catch (error) {
-    console.error('Error updating enumeration:', error)
-  }
-}
-
-const getContrastColor = (hexColor: string) => {
-  // Convert hex to RGB
-  const r = parseInt(hexColor.slice(1, 3), 16)
-  const g = parseInt(hexColor.slice(3, 5), 16)
-  const b = parseInt(hexColor.slice(5, 7), 16)
-  
-  // Calculate relative luminance
-  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255
-  
-  return luminance > 0.5 ? '#000000' : '#FFFFFF'
-}
-
-// Load initial data
-onMounted(() => {
-  loadTags()
+definePageMeta({
+  middleware: ['admin']
 })
 </script>

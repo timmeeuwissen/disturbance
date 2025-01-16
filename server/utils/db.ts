@@ -2,10 +2,59 @@ import Database from 'better-sqlite3'
 import { resolve } from 'path'
 import type { Issue, Reference, ImpactedSystem, InvolvedTeam } from '~/types'
 
-const db = new Database(resolve(process.cwd(), 'db/disturbance.db'))
+export const db = new Database(resolve(process.cwd(), 'db/disturbance.db'))
 
 // Prepare statements for better performance
 const statements = {
+  // Lists
+  getAllStatuses: db.prepare(`
+    SELECT * FROM statuses ORDER BY name
+  `),
+  
+  getAllSeverities: db.prepare(`
+    SELECT * FROM severities ORDER BY name
+  `),
+  
+  getAllReferenceTypes: db.prepare(`
+    SELECT * FROM reference_types ORDER BY name
+  `),
+  
+  createStatus: db.prepare(`
+    INSERT INTO statuses (name, is_final) VALUES (?, ?)
+  `),
+  
+  createSeverity: db.prepare(`
+    INSERT INTO severities (name) VALUES (?)
+  `),
+  
+  createReferenceType: db.prepare(`
+    INSERT INTO reference_types (name) VALUES (?)
+  `),
+  
+  updateStatus: db.prepare(`
+    UPDATE statuses SET name = ?, is_final = ? WHERE id = ?
+  `),
+  
+  updateSeverity: db.prepare(`
+    UPDATE severities SET name = ? WHERE id = ?
+  `),
+  
+  updateReferenceType: db.prepare(`
+    UPDATE reference_types SET name = ? WHERE id = ?
+  `),
+  
+  deleteStatus: db.prepare(`
+    DELETE FROM statuses WHERE id = ?
+  `),
+  
+  deleteSeverity: db.prepare(`
+    DELETE FROM severities WHERE id = ?
+  `),
+  
+  deleteReferenceType: db.prepare(`
+    DELETE FROM reference_types WHERE id = ?
+  `),
+  
   // Issues
   getAllIssues: db.prepare(`
     SELECT * FROM issues ORDER BY created_at DESC
@@ -97,6 +146,55 @@ const statements = {
 }
 
 export const dbService = {
+  // Lists
+  getAllStatuses() {
+    return statements.getAllStatuses.all()
+  },
+  
+  getAllSeverities() {
+    return statements.getAllSeverities.all()
+  },
+  
+  getAllReferenceTypes() {
+    return statements.getAllReferenceTypes.all()
+  },
+  
+  createStatus(name: string, isFinal: boolean) {
+    return statements.createStatus.run(name, isFinal)
+  },
+  
+  createSeverity(name: string) {
+    return statements.createSeverity.run(name)
+  },
+  
+  createReferenceType(name: string) {
+    return statements.createReferenceType.run(name)
+  },
+  
+  updateStatus(id: number, name: string, isFinal: boolean) {
+    return statements.updateStatus.run(name, isFinal, id)
+  },
+  
+  updateSeverity(id: number, name: string) {
+    return statements.updateSeverity.run(name, id)
+  },
+  
+  updateReferenceType(id: number, name: string) {
+    return statements.updateReferenceType.run(name, id)
+  },
+  
+  deleteStatus(id: number) {
+    return statements.deleteStatus.run(id)
+  },
+  
+  deleteSeverity(id: number) {
+    return statements.deleteSeverity.run(id)
+  },
+  
+  deleteReferenceType(id: number) {
+    return statements.deleteReferenceType.run(id)
+  },
+
   // Execute raw SQL query (admin only)
   executeQuery(query: string): any[] {
     return db.prepare(query).all()
