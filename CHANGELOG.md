@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 ## [2025-01-16]
 
+- Fixed ERD diagram generation with proper Mermaid syntax and improved schema parsing
+
+## [2025-01-16]
+
 - Added dynamic ERD diagram generation from database schema file
 
 ## [2025-01-16]

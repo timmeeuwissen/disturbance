@@ -20,31 +20,28 @@ export default defineEventHandler(async () => {
     const columnLines = columnsStr.split('\n')
     for (const line of columnLines) {
       const trimmedLine = line.trim()
-      if (!trimmedLine || trimmedLine.startsWith('--')) continue
+      if (!trimmedLine || trimmedLine.startsWith('--') || trimmedLine.startsWith('CHECK')) continue
 
       // Check for foreign key constraint
-      if (trimmedLine.includes('FOREIGN KEY')) {
+      if (trimmedLine.startsWith('FOREIGN KEY')) {
         const fkMatch = trimmedLine.match(/FOREIGN KEY\s*\((\w+)\)\s*REFERENCES\s*(\w+)/)
         if (fkMatch) {
-          // Use proper Mermaid relationship syntax
           foreignKeys.push(`${tableName} }|--|| ${fkMatch[2]} : has`)
         }
         continue
       }
 
-      // Skip CHECK constraints and other non-column lines
-      if (trimmedLine.startsWith('CHECK') || 
-          trimmedLine.startsWith('PRIMARY') || 
-          trimmedLine.startsWith('FOREIGN') || 
-          trimmedLine.startsWith('UNIQUE')) continue
+      // Skip other constraints
+      if (trimmedLine.startsWith('PRIMARY') || trimmedLine.startsWith('UNIQUE')) continue
 
-      const parts = trimmedLine.split(/\s+/)
-      if (!parts[0] || !parts[1]) continue
+      // Parse column definition
+      const columnMatch = trimmedLine.match(/^(\w+)\s+(\w+)/)
+      if (!columnMatch) continue
 
-      const name = parts[0]
-      let type = parts[1]
+      const [, name, type] = columnMatch
       let constraints = ''
 
+      // Check for constraints in the column definition
       if (trimmedLine.includes('PRIMARY KEY')) {
         constraints = 'PK'
       } else if (trimmedLine.includes('UNIQUE')) {
@@ -57,14 +54,15 @@ export default defineEventHandler(async () => {
       }
 
       // Convert SQL types to Mermaid types
-      if (type === 'INTEGER') type = 'int'
-      else if (type === 'TEXT') type = 'string'
-      else if (type === 'DATETIME') type = 'datetime'
-      else if (type === 'BOOLEAN') type = 'bool'
+      let mermaidType = type.toLowerCase()
+      if (type === 'INTEGER') mermaidType = 'int'
+      else if (type === 'TEXT') mermaidType = 'string'
+      else if (type === 'DATETIME') mermaidType = 'datetime'
+      else if (type === 'BOOLEAN') mermaidType = 'bool'
 
       // Convert snake_case to camelCase for Mermaid compatibility
       const camelName = name.replace(/_([a-z])/g, (g) => g[1].toUpperCase())
-      columns.push({ name: camelName, type, constraints })
+      columns.push({ name: camelName, type: mermaidType, constraints })
     }
 
     tables[tableName] = { columns, foreignKeys }
