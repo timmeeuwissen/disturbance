@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 ## [2025-01-16]
 
+- Added list management functionality:n- Added API endpoints for managing statuses, severities, and reference typesn- Implemented list management UI with CRUD operationsn- Added support for final status flagn- Added proper error handling and feedback
+
+## [2025-01-16]
+
 - Fixed admin toggle functionality:n- Updated layout to use proper v-model bindingn- Fixed composable to handle toggle correctlyn- Improved state management interaction
 
 ## [2025-01-16]

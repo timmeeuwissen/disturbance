@@ -14,11 +14,11 @@ export default defineEventHandler(async (event) => {
   try {
     switch (type) {
       case 'statuses':
-        return await dbService.createStatus(body.name, body.isFinal || false)
+        return await dbService.createStatus(body.name, body.is_final || false, body.is_default || false)
       case 'severities':
-        return await dbService.createSeverity(body.name)
+        return await dbService.createSeverity(body.name, body.is_default || false)
       case 'reference-types':
-        return await dbService.createReferenceType(body.name)
+        return await dbService.createReferenceType(body.name, body.is_default || false)
       default:
         throw createError({
           statusCode: 400,

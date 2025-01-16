@@ -32,6 +32,14 @@ v-container(fluid)
                   label="Final"
                   @change="updateStatus(status)"
                 )
+                v-switch(
+                  v-model="status.is_default"
+                  color="warning"
+                  hide-details
+                  density="compact"
+                  label="Default"
+                  @change="updateStatus(status)"
+                )
                 v-btn(
                   icon="mdi-pencil"
                   variant="text"
@@ -66,6 +74,14 @@ v-container(fluid)
               :title="severity.name"
             )
               template(#append)
+                v-switch(
+                  v-model="severity.is_default"
+                  color="warning"
+                  hide-details
+                  density="compact"
+                  label="Default"
+                  @change="updateSeverity(severity)"
+                )
                 v-btn(
                   icon="mdi-pencil"
                   variant="text"
@@ -99,6 +115,14 @@ v-container(fluid)
               :title="type.name"
             )
               template(#append)
+                v-switch(
+                  v-model="type.is_default"
+                  color="warning"
+                  hide-details
+                  density="compact"
+                  label="Default"
+                  @change="updateReferenceType(type)"
+                )
                 v-btn(
                   icon="mdi-pencil"
                   variant="text"
@@ -130,6 +154,12 @@ v-container(fluid)
           hide-details
           label="Final Status"
         )
+        v-switch(
+          v-model="dialog.item.is_default"
+          color="warning"
+          hide-details
+          label="Default Value"
+        )
       v-card-actions
         v-spacer
         v-btn(
@@ -150,6 +180,7 @@ interface ListItem {
   id: number
   name: string
   is_final?: boolean
+  is_default?: boolean
 }
 
 // State
@@ -191,7 +222,7 @@ const addStatus = () => {
   dialog.show = true
   dialog.title = 'Add Status'
   dialog.type = 'status'
-  dialog.item = { id: 0, name: '', is_final: false }
+  dialog.item = { id: 0, name: '', is_final: false, is_default: false }
   dialog.isNew = true
 }
 
@@ -237,7 +268,7 @@ const addSeverity = () => {
   dialog.show = true
   dialog.title = 'Add Severity'
   dialog.type = 'severity'
-  dialog.item = { id: 0, name: '' }
+  dialog.item = { id: 0, name: '', is_default: false }
   dialog.isNew = true
 }
 
@@ -247,6 +278,20 @@ const editSeverity = (severity: ListItem) => {
   dialog.type = 'severity'
   dialog.item = { ...severity }
   dialog.isNew = false
+}
+
+const updateSeverity = async (severity: ListItem) => {
+  try {
+    await $fetch(`/api/admin/lists/severities/${severity.id}`, {
+      method: 'PUT',
+      body: severity
+    })
+    await loadData()
+  } catch (error: any) {
+    console.error('Error updating severity:', error)
+    const showMessage = inject<(text: string, color?: 'success' | 'error') => void>('showMessage')
+    showMessage?.('Error updating severity', 'error')
+  }
 }
 
 const deleteSeverity = async (severity: ListItem) => {
@@ -269,7 +314,7 @@ const addReferenceType = () => {
   dialog.show = true
   dialog.title = 'Add Reference Type'
   dialog.type = 'reference'
-  dialog.item = { id: 0, name: '' }
+  dialog.item = { id: 0, name: '', is_default: false }
   dialog.isNew = true
 }
 
@@ -279,6 +324,20 @@ const editReferenceType = (type: ListItem) => {
   dialog.type = 'reference'
   dialog.item = { ...type }
   dialog.isNew = false
+}
+
+const updateReferenceType = async (type: ListItem) => {
+  try {
+    await $fetch(`/api/admin/lists/reference-types/${type.id}`, {
+      method: 'PUT',
+      body: type
+    })
+    await loadData()
+  } catch (error: any) {
+    console.error('Error updating reference type:', error)
+    const showMessage = inject<(text: string, color?: 'success' | 'error') => void>('showMessage')
+    showMessage?.('Error updating reference type', 'error')
+  }
 }
 
 const deleteReferenceType = async (type: ListItem) => {

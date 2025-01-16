@@ -20,27 +20,27 @@ const statements = {
   `),
   
   createStatus: db.prepare(`
-    INSERT INTO statuses (name, is_final) VALUES (?, ?)
+    INSERT INTO statuses (name, is_final, is_default) VALUES (?, ?, ?)
   `),
   
   createSeverity: db.prepare(`
-    INSERT INTO severities (name) VALUES (?)
+    INSERT INTO severities (name, is_default) VALUES (?, ?)
   `),
   
   createReferenceType: db.prepare(`
-    INSERT INTO reference_types (name) VALUES (?)
+    INSERT INTO reference_types (name, is_default) VALUES (?, ?)
   `),
   
   updateStatus: db.prepare(`
-    UPDATE statuses SET name = ?, is_final = ? WHERE id = ?
+    UPDATE statuses SET name = ?, is_final = ?, is_default = ? WHERE id = ?
   `),
   
   updateSeverity: db.prepare(`
-    UPDATE severities SET name = ? WHERE id = ?
+    UPDATE severities SET name = ?, is_default = ? WHERE id = ?
   `),
   
   updateReferenceType: db.prepare(`
-    UPDATE reference_types SET name = ? WHERE id = ?
+    UPDATE reference_types SET name = ?, is_default = ? WHERE id = ?
   `),
   
   deleteStatus: db.prepare(`
@@ -159,28 +159,28 @@ export const dbService = {
     return statements.getAllReferenceTypes.all()
   },
   
-  createStatus(name: string, isFinal: boolean) {
-    return statements.createStatus.run(name, isFinal)
+  createStatus(name: string, isFinal: boolean, isDefault: boolean = false) {
+    return statements.createStatus.run(name, isFinal, isDefault)
   },
   
-  createSeverity(name: string) {
-    return statements.createSeverity.run(name)
+  createSeverity(name: string, isDefault: boolean = false) {
+    return statements.createSeverity.run(name, isDefault)
   },
   
-  createReferenceType(name: string) {
-    return statements.createReferenceType.run(name)
+  createReferenceType(name: string, isDefault: boolean = false) {
+    return statements.createReferenceType.run(name, isDefault)
   },
   
-  updateStatus(id: number, name: string, isFinal: boolean) {
-    return statements.updateStatus.run(name, isFinal, id)
+  updateStatus(id: number, name: string, isFinal: boolean, isDefault: boolean) {
+    return statements.updateStatus.run(name, isFinal, isDefault, id)
   },
   
-  updateSeverity(id: number, name: string) {
-    return statements.updateSeverity.run(name, id)
+  updateSeverity(id: number, name: string, isDefault: boolean) {
+    return statements.updateSeverity.run(name, isDefault, id)
   },
   
-  updateReferenceType(id: number, name: string) {
-    return statements.updateReferenceType.run(name, id)
+  updateReferenceType(id: number, name: string, isDefault: boolean) {
+    return statements.updateReferenceType.run(name, isDefault, id)
   },
   
   deleteStatus(id: number) {
