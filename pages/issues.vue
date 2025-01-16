@@ -29,7 +29,7 @@ v-card
           :item-title="item => item.length ? item[0] : 'All Statuses'"
           hide-details
           density="compact"
-          :loading="listsLoading"
+          :loading="loading"
         )
       
       v-col(cols="12" sm="3")
@@ -40,7 +40,7 @@ v-card
           :item-title="item => item.length ? item[0] : 'All Severities'"
           hide-details
           density="compact"
-          :loading="listsLoading"
+          :loading="loading"
         )
       
       v-col(cols="12" sm="3")
@@ -65,10 +65,10 @@ v-card
       @update:items-per-page="itemsPerPage = $event"
     )
       template(#item.status="{ item }")
-        span(:class="getStatusClass(item.raw.status?.value)") {{ item.raw.status?.value }}
+        span(:class="getStatusClass(item.raw.status)") {{ item.raw.status }}
       
       template(#item.severity="{ item }")
-        span(:class="getSeverityClass(item.raw.severity?.value)") {{ item.raw.severity?.value }}
+        span(:class="getSeverityClass(item.raw.severity)") {{ item.raw.severity }}
       
       template(#item.startTimestamp="{ item }")
         | {{ formatDate(item.raw.startTimestamp) }}
@@ -131,27 +131,22 @@ v-card
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, inject } from 'vue'
 import dayjs from 'dayjs'
-import type { 
-  Issue, 
-  IssueFilters, 
-  ExportOptions, 
-  StatusValue, 
-  SeverityValue 
-} from '~/types'
+import type { Issue, IssueFilters, ExportOptions } from '~/types'
+import { useLists } from '~/composables/useLists'
 
 // Lists
 const { 
-  severityValues,
   statusValues,
-  loading: listsLoading,
-  fetchAll: fetchLists
+  severityValues,
+  loading,
+  loadLists
 } = useLists()
 
 // Convert values to options format
-const severityOptions = computed(() => severityValues.value.map(v => [v]))
 const statusOptions = computed(() => statusValues.value.map(v => [v]))
+const severityOptions = computed(() => severityValues.value.map(v => [v]))
 
 // Table headers
 const headers = [
@@ -225,10 +220,10 @@ const filteredIssues = computed(() => {
       issue.description?.toLowerCase().includes(filters.value.search.toLowerCase())
     
     const matchesStatus = !filters.value.status?.length || 
-      (issue.status?.value && filters.value.status.includes(issue.status.value))
+      filters.value.status.includes(issue.status)
     
     const matchesSeverity = !filters.value.severity?.length || 
-      (issue.severity?.value && filters.value.severity.includes(issue.severity.value))
+      filters.value.severity.includes(issue.severity)
     
     let matchesTimeRange = true
     if (filters.value.startDate && issue.startTimestamp) {
@@ -242,11 +237,11 @@ const filteredIssues = computed(() => {
   })
 })
 
-const getStatusClass = (status?: StatusValue) => {
+const getStatusClass = (status?: string) => {
   return status ? `status-${status.toLowerCase()}` : ''
 }
 
-const getSeverityClass = (severity?: SeverityValue) => {
+const getSeverityClass = (severity?: string) => {
   return severity ? `severity-${severity.toLowerCase()}` : ''
 }
 
@@ -310,7 +305,7 @@ const confirmExport = async () => {
 
 // Fetch data on mount
 onMounted(async () => {
-  await fetchLists()
+  await loadLists()
   try {
     const response = await $fetch<Issue[]>('/api/issues')
     issues.value = response

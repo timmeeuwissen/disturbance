@@ -4,7 +4,7 @@ export default defineNuxtConfig({
   
   modules: [
     ['@pinia/nuxt', {
-      autoImports: ['defineStore', 'storeToRefs']
+      imports: ['defineStore', 'storeToRefs']
     }],
     '@pinia-plugin-persistedstate/nuxt',
     async (options, nuxt) => {

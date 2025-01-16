@@ -17,43 +17,43 @@ v-container(fluid)
             @click="addStatus"
           ) Add
         v-card-text
-          v-list
-            v-list-item(
-              v-for="status in statuses"
-              :key="status.id"
-              :title="status.name"
+          v-list(lines="one")
+            draggable(
+              v-model="statuses"
+              item-key="id"
+              handle=".handle"
+              @end="updateOrder('statuses')"
             )
-              template(#append)
-                v-switch(
-                  v-model="status.is_final"
-                  color="warning"
-                  hide-details
-                  density="compact"
-                  label="Final"
-                  @change="updateStatus(status)"
-                )
-                v-switch(
-                  v-model="status.is_default"
-                  color="warning"
-                  hide-details
-                  density="compact"
-                  label="Default"
-                  @change="updateStatus(status)"
-                )
-                v-btn(
-                  icon="mdi-pencil"
-                  variant="text"
-                  size="small"
-                  class="ml-2"
-                  @click="editStatus(status)"
-                )
-                v-btn(
-                  icon="mdi-delete"
-                  variant="text"
-                  size="small"
-                  color="error"
-                  @click="deleteStatus(status)"
-                )
+              template(#item="{ element: status }")
+                v-list-item(:title="status.name")
+                  template(#prepend)
+                    v-icon.handle(color="grey") mdi-drag
+                  template(#append)
+                    v-chip(
+                      v-if="status.is_final"
+                      color="warning"
+                      size="small"
+                      class="mr-2"
+                    ) Final
+                    v-chip(
+                      v-if="status.is_default"
+                      color="warning"
+                      size="small"
+                      class="mr-2"
+                    ) Default
+                    v-btn(
+                      icon="mdi-pencil"
+                      variant="text"
+                      size="small"
+                      @click="editStatus(status)"
+                    )
+                    v-btn(
+                      icon="mdi-delete"
+                      variant="text"
+                      size="small"
+                      color="error"
+                      @click="deleteStatus(status)"
+                    )
 
     v-col(cols="12" md="6" lg="4")
       v-card(variant="outlined")
@@ -67,34 +67,37 @@ v-container(fluid)
             @click="addSeverity"
           ) Add
         v-card-text
-          v-list
-            v-list-item(
-              v-for="severity in severities"
-              :key="severity.id"
-              :title="severity.name"
+          v-list(lines="one")
+            draggable(
+              v-model="severities"
+              item-key="id"
+              handle=".handle"
+              @end="updateOrder('severities')"
             )
-              template(#append)
-                v-switch(
-                  v-model="severity.is_default"
-                  color="warning"
-                  hide-details
-                  density="compact"
-                  label="Default"
-                  @change="updateSeverity(severity)"
-                )
-                v-btn(
-                  icon="mdi-pencil"
-                  variant="text"
-                  size="small"
-                  @click="editSeverity(severity)"
-                )
-                v-btn(
-                  icon="mdi-delete"
-                  variant="text"
-                  size="small"
-                  color="error"
-                  @click="deleteSeverity(severity)"
-                )
+              template(#item="{ element: severity }")
+                v-list-item(:title="severity.name")
+                  template(#prepend)
+                    v-icon.handle(color="grey") mdi-drag
+                  template(#append)
+                    v-chip(
+                      v-if="severity.is_default"
+                      color="warning"
+                      size="small"
+                      class="mr-2"
+                    ) Default
+                    v-btn(
+                      icon="mdi-pencil"
+                      variant="text"
+                      size="small"
+                      @click="editSeverity(severity)"
+                    )
+                    v-btn(
+                      icon="mdi-delete"
+                      variant="text"
+                      size="small"
+                      color="error"
+                      @click="deleteSeverity(severity)"
+                    )
 
     v-col(cols="12" md="6" lg="4")
       v-card(variant="outlined")
@@ -108,34 +111,37 @@ v-container(fluid)
             @click="addReferenceType"
           ) Add
         v-card-text
-          v-list
-            v-list-item(
-              v-for="type in referenceTypes"
-              :key="type.id"
-              :title="type.name"
+          v-list(lines="one")
+            draggable(
+              v-model="referenceTypes"
+              item-key="id"
+              handle=".handle"
+              @end="updateOrder('referenceTypes')"
             )
-              template(#append)
-                v-switch(
-                  v-model="type.is_default"
-                  color="warning"
-                  hide-details
-                  density="compact"
-                  label="Default"
-                  @change="updateReferenceType(type)"
-                )
-                v-btn(
-                  icon="mdi-pencil"
-                  variant="text"
-                  size="small"
-                  @click="editReferenceType(type)"
-                )
-                v-btn(
-                  icon="mdi-delete"
-                  variant="text"
-                  size="small"
-                  color="error"
-                  @click="deleteReferenceType(type)"
-                )
+              template(#item="{ element: type }")
+                v-list-item(:title="type.name")
+                  template(#prepend)
+                    v-icon.handle(color="grey") mdi-drag
+                  template(#append)
+                    v-chip(
+                      v-if="type.is_default"
+                      color="warning"
+                      size="small"
+                      class="mr-2"
+                    ) Default
+                    v-btn(
+                      icon="mdi-pencil"
+                      variant="text"
+                      size="small"
+                      @click="editReferenceType(type)"
+                    )
+                    v-btn(
+                      icon="mdi-delete"
+                      variant="text"
+                      size="small"
+                      color="error"
+                      @click="deleteReferenceType(type)"
+                    )
 
   // Edit Dialog
   v-dialog(v-model="dialog.show" max-width="500")
@@ -175,12 +181,14 @@ v-container(fluid)
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
+import draggable from 'vuedraggable'
 
 interface ListItem {
   id: number
   name: string
   is_final?: boolean
   is_default?: boolean
+  sort_order?: number
 }
 
 // State
@@ -215,6 +223,32 @@ const loadData = async () => {
   }
 }
 
+// Update sort order
+const updateOrder = async (type: 'statuses' | 'severities' | 'referenceTypes') => {
+  const items = type === 'statuses' ? statuses.value :
+    type === 'severities' ? severities.value :
+    referenceTypes.value
+
+  const endpoint = type === 'statuses' ? 'statuses' :
+    type === 'severities' ? 'severities' :
+    'reference-types'
+
+  try {
+    await $fetch(`/api/admin/lists/${endpoint}/order`, {
+      method: 'PUT',
+      body: items.map((item, index) => ({
+        id: item.id,
+        sort_order: index
+      }))
+    })
+  } catch (error: any) {
+    console.error('Error updating order:', error)
+    const showMessage = inject<(text: string, color?: 'success' | 'error') => void>('showMessage')
+    showMessage?.('Error updating order', 'error')
+    await loadData() // Reload to restore original order
+  }
+}
+
 onMounted(loadData)
 
 // Status actions
@@ -232,20 +266,6 @@ const editStatus = (status: ListItem) => {
   dialog.type = 'status'
   dialog.item = { ...status }
   dialog.isNew = false
-}
-
-const updateStatus = async (status: ListItem) => {
-  try {
-    await $fetch(`/api/admin/lists/statuses/${status.id}`, {
-      method: 'PUT',
-      body: status
-    })
-    await loadData()
-  } catch (error: any) {
-    console.error('Error updating status:', error)
-    const showMessage = inject<(text: string, color?: 'success' | 'error') => void>('showMessage')
-    showMessage?.('Error updating status', 'error')
-  }
 }
 
 const deleteStatus = async (status: ListItem) => {
@@ -280,20 +300,6 @@ const editSeverity = (severity: ListItem) => {
   dialog.isNew = false
 }
 
-const updateSeverity = async (severity: ListItem) => {
-  try {
-    await $fetch(`/api/admin/lists/severities/${severity.id}`, {
-      method: 'PUT',
-      body: severity
-    })
-    await loadData()
-  } catch (error: any) {
-    console.error('Error updating severity:', error)
-    const showMessage = inject<(text: string, color?: 'success' | 'error') => void>('showMessage')
-    showMessage?.('Error updating severity', 'error')
-  }
-}
-
 const deleteSeverity = async (severity: ListItem) => {
   if (confirm(`Are you sure you want to delete "${severity.name}"?`)) {
     try {
@@ -324,20 +330,6 @@ const editReferenceType = (type: ListItem) => {
   dialog.type = 'reference'
   dialog.item = { ...type }
   dialog.isNew = false
-}
-
-const updateReferenceType = async (type: ListItem) => {
-  try {
-    await $fetch(`/api/admin/lists/reference-types/${type.id}`, {
-      method: 'PUT',
-      body: type
-    })
-    await loadData()
-  } catch (error: any) {
-    console.error('Error updating reference type:', error)
-    const showMessage = inject<(text: string, color?: 'success' | 'error') => void>('showMessage')
-    showMessage?.('Error updating reference type', 'error')
-  }
 }
 
 const deleteReferenceType = async (type: ListItem) => {
@@ -389,3 +381,9 @@ definePageMeta({
   middleware: ['admin']
 })
 </script>
+
+<style scoped>
+.handle {
+  cursor: move;
+}
+</style>

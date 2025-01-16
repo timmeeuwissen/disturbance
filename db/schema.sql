@@ -2,19 +2,22 @@ CREATE TABLE IF NOT EXISTS statuses (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   name TEXT NOT NULL,
   is_final BOOLEAN NOT NULL DEFAULT 0,
-  is_default BOOLEAN NOT NULL DEFAULT 0
+  is_default BOOLEAN NOT NULL DEFAULT 0,
+  sort_order INTEGER NOT NULL DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS severities (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   name TEXT NOT NULL,
-  is_default BOOLEAN NOT NULL DEFAULT 0
+  is_default BOOLEAN NOT NULL DEFAULT 0,
+  sort_order INTEGER NOT NULL DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS reference_types (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   name TEXT NOT NULL,
-  is_default BOOLEAN NOT NULL DEFAULT 0
+  is_default BOOLEAN NOT NULL DEFAULT 0,
+  sort_order INTEGER NOT NULL DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS issues (
@@ -105,18 +108,18 @@ BEGIN
 END;
 
 -- Insert initial data
-INSERT OR IGNORE INTO statuses (name, is_final, is_default) VALUES
-  ('New', 0, 1),
-  ('In Progress', 0, 0),
-  ('Resolved', 1, 0);
+INSERT OR IGNORE INTO statuses (name, is_final, is_default, sort_order) VALUES
+  ('New', 0, 1, 0),
+  ('In Progress', 0, 0, 1),
+  ('Resolved', 1, 0, 2);
 
-INSERT OR IGNORE INTO severities (name, is_default) VALUES
-  ('Low', 0),
-  ('Medium', 1),
-  ('High', 0),
-  ('Critical', 0);
+INSERT OR IGNORE INTO severities (name, is_default, sort_order) VALUES
+  ('Low', 0, 0),
+  ('Medium', 1, 1),
+  ('High', 0, 2),
+  ('Critical', 0, 3);
 
-INSERT OR IGNORE INTO reference_types (name, is_default) VALUES
-  ('Jira', 1),
-  ('GitHub', 0),
-  ('ServiceNow', 0);
+INSERT OR IGNORE INTO reference_types (name, is_default, sort_order) VALUES
+  ('Jira', 1, 0),
+  ('GitHub', 0, 1),
+  ('ServiceNow', 0, 2);

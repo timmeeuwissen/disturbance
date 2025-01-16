@@ -16,7 +16,15 @@ export const useLists = () => {
   const defaultSeverity = ref<ListItem | null>(null)
   const defaultReferenceType = ref<ListItem | null>(null)
 
+  const loading = ref(false)
+
+  // Convert to simple arrays for backwards compatibility
+  const statusValues = computed(() => statuses.value.map(s => s.name))
+  const severityValues = computed(() => severities.value.map(s => s.name))
+  const referenceTypeValues = computed(() => referenceTypes.value.map(r => r.name))
+
   const loadLists = async () => {
+    loading.value = true
     try {
       const [statusesData, severitiesData, referenceTypesData] = await Promise.all([
         $fetch<ListItem[]>('/api/admin/lists/statuses'),
@@ -36,6 +44,8 @@ export const useLists = () => {
       console.error('Error loading lists:', error)
       const showMessage = inject<(text: string, color?: 'success' | 'error') => void>('showMessage')
       showMessage?.('Error loading lists', 'error')
+    } finally {
+      loading.value = false
     }
   }
 
@@ -47,10 +57,18 @@ export const useLists = () => {
     severities,
     referenceTypes,
     
+    // Values (for backwards compatibility)
+    statusValues,
+    severityValues,
+    referenceTypeValues,
+    
     // Defaults
     defaultStatus,
     defaultSeverity,
     defaultReferenceType,
+    
+    // State
+    loading,
     
     // Actions
     loadLists

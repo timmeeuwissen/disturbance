@@ -7,6 +7,10 @@ All notable changes to this project will be documented in this file.
 
 ## [2025-01-16]
 
+- Added default value support to new issue page:n- Added useLists composable for managing lists and defaultsn- Updated new issue page to use default valuesn- Added proper type definitionsn- Added error handling
+
+## [2025-01-16]
+
 - Fixed database initialization:n- Added execute permissions to init-db scriptn- Initialized database with new schema including default valuesn- Added triggers for default value management
 
 ## [2025-01-16]

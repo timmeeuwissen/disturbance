@@ -8,15 +8,15 @@ export const db = new Database(resolve(process.cwd(), 'db/disturbance.db'))
 const statements = {
   // Lists
   getAllStatuses: db.prepare(`
-    SELECT * FROM statuses ORDER BY name
+    SELECT * FROM statuses ORDER BY sort_order, name
   `),
   
   getAllSeverities: db.prepare(`
-    SELECT * FROM severities ORDER BY name
+    SELECT * FROM severities ORDER BY sort_order, name
   `),
   
   getAllReferenceTypes: db.prepare(`
-    SELECT * FROM reference_types ORDER BY name
+    SELECT * FROM reference_types ORDER BY sort_order, name
   `),
   
   createStatus: db.prepare(`
@@ -146,6 +146,11 @@ const statements = {
 }
 
 export const dbService = {
+  // Database instance
+  getDb() {
+    return db
+  },
+
   // Lists
   getAllStatuses() {
     return statements.getAllStatuses.all()
