@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 ## [2025-01-16]
 
+- Added zoom and pan controls to ERD diagram, improved SQL editor, and made admin UI more organized with collapsible cards
+
+## [2025-01-16]
+
 - Fixed schema parsing to generate valid Mermaid ERD syntax
 
 ## [2025-01-16]

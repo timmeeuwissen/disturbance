@@ -25,8 +25,8 @@ v-card
         v-select(
           v-model="filters.status"
           label="Status"
-          :items="['', 'open', 'investigating', 'mitigated', 'resolved', 'closed']"
-          :item-title="item => item || 'All Statuses'"
+          :items="[[], ...statusOptions]"
+          :item-title="item => item.length ? item[0] : 'All Statuses'"
           hide-details
           density="compact"
         )
@@ -35,21 +35,22 @@ v-card
         v-select(
           v-model="filters.severity"
           label="Severity"
-          :items="['', 'critical', 'high', 'medium', 'low']"
-          :item-title="item => item || 'All Severities'"
+          :items="[[], ...severityOptions]"
+          :item-title="item => item.length ? item[0] : 'All Severities'"
           hide-details
           density="compact"
         )
       
       v-col(cols="12" sm="3")
         v-select(
-          v-model="filters.timeRange"
+          v-model="selectedTimeRange"
           label="Time Range"
-          :items="[{ value: 'all', title: 'All Time' }, { value: 'today', title: 'Today' }, { value: 'week', title: 'This Week' }, { value: 'month', title: 'This Month' }, { value: 'quarter', title: 'This Quarter' }]"
+          :items="timeRangeOptions"
           item-title="title"
           item-value="value"
           hide-details
           density="compact"
+          @update:model-value="updateTimeRange"
         )
     
     // Table
@@ -62,10 +63,10 @@ v-card
       @update:items-per-page="itemsPerPage = $event"
     )
       template(#item.status="{ item }")
-        span(:class="getStatusClass(item.raw.status)") {{ item.raw.status }}
+        span(:class="getStatusClass(getStatusValue(item.raw.status))") {{ getStatusValue(item.raw.status) }}
       
       template(#item.severity="{ item }")
-        span(:class="getSeverityClass(item.raw.severity)") {{ item.raw.severity }}
+        span(:class="getSeverityClass(getSeverityValue(item.raw.severity))") {{ getSeverityValue(item.raw.severity) }}
       
       template(#item.startTimestamp="{ item }")
         | {{ formatDate(item.raw.startTimestamp) }}
@@ -131,9 +132,34 @@ v-card
 import { ref, computed } from 'vue'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
-import type { Issue, IssueFilters, ExportOptions } from '~/types'
+import type { Issue, IssueFilters, ExportOptions, StatusValue, SeverityValue } from '~/types'
+import { getStatusValue, getSeverityValue } from '~/types'
 
 dayjs.extend(relativeTime)
+
+// Constants
+const statusOptions: StatusValue[][] = [
+  ['open'],
+  ['investigating'],
+  ['mitigated'],
+  ['resolved'],
+  ['closed']
+]
+
+const severityOptions: SeverityValue[][] = [
+  ['critical'],
+  ['high'],
+  ['medium'],
+  ['low']
+]
+
+const timeRangeOptions = [
+  { value: 'all', title: 'All Time' },
+  { value: 'today', title: 'Today' },
+  { value: 'week', title: 'This Week' },
+  { value: 'month', title: 'This Month' },
+  { value: 'quarter', title: 'This Quarter' }
+]
 
 // Table headers
 const headers = [
@@ -152,16 +178,43 @@ const issues = ref<Issue[]>([])
 const currentPage = ref(1)
 const itemsPerPage = ref(10)
 const showExportDialog = ref(false)
-const exportFormat = ref('csv')
-const exportTemplate = ref('full')
+const exportFormat = ref<'csv' | 'json'>('csv')
+const exportTemplate = ref<'full' | 'summary' | 'metrics'>('full')
 const exportForm = ref<any>(null)
+const selectedTimeRange = ref('all')
 
 const filters = ref<IssueFilters>({
   search: '',
-  status: '',
-  severity: '',
-  timeRange: 'all'
+  status: [],
+  severity: [],
+  topic: []
 })
+
+// Methods
+const updateTimeRange = (value: string) => {
+  const now = dayjs()
+  switch (value) {
+    case 'today':
+      filters.value.startDate = now.startOf('day').toISOString()
+      filters.value.endDate = now.endOf('day').toISOString()
+      break
+    case 'week':
+      filters.value.startDate = now.startOf('week').toISOString()
+      filters.value.endDate = now.endOf('week').toISOString()
+      break
+    case 'month':
+      filters.value.startDate = now.startOf('month').toISOString()
+      filters.value.endDate = now.endOf('month').toISOString()
+      break
+    case 'quarter':
+      filters.value.startDate = now.startOf('quarter').toISOString()
+      filters.value.endDate = now.endOf('quarter').toISOString()
+      break
+    default:
+      filters.value.startDate = undefined
+      filters.value.endDate = undefined
+  }
+}
 
 // Computed
 const filteredIssues = computed(() => {
@@ -170,32 +223,24 @@ const filteredIssues = computed(() => {
       issue.title.toLowerCase().includes(filters.value.search.toLowerCase()) ||
       issue.description?.toLowerCase().includes(filters.value.search.toLowerCase())
     
-    const matchesStatus = !filters.value.status || issue.status === filters.value.status
-    const matchesSeverity = !filters.value.severity || issue.severity === filters.value.severity
+    const matchesStatus = !filters.value.status?.length || 
+      (issue.status && filters.value.status.includes(getStatusValue(issue.status)))
+    
+    const matchesSeverity = !filters.value.severity?.length || 
+      (issue.severity && filters.value.severity.includes(getSeverityValue(issue.severity)))
     
     let matchesTimeRange = true
-    const startDate = dayjs(issue.startTimestamp)
-    
-    switch (filters.value.timeRange) {
-      case 'today':
-        matchesTimeRange = startDate.isAfter(dayjs().startOf('day'))
-        break
-      case 'week':
-        matchesTimeRange = startDate.isAfter(dayjs().startOf('week'))
-        break
-      case 'month':
-        matchesTimeRange = startDate.isAfter(dayjs().startOf('month'))
-        break
-      case 'quarter':
-        matchesTimeRange = startDate.isAfter(dayjs().startOf('quarter'))
-        break
+    if (filters.value.startDate && issue.startTimestamp) {
+      matchesTimeRange = dayjs(issue.startTimestamp).isAfter(filters.value.startDate)
+    }
+    if (filters.value.endDate && issue.startTimestamp) {
+      matchesTimeRange = matchesTimeRange && dayjs(issue.startTimestamp).isBefore(filters.value.endDate)
     }
     
     return matchesSearch && matchesStatus && matchesSeverity && matchesTimeRange
   })
 })
 
-// Methods
 const getStatusClass = (status: string) => {
   return `status-${status.toLowerCase()}`
 }
@@ -204,18 +249,19 @@ const getSeverityClass = (severity: string) => {
   return `severity-${severity.toLowerCase()}`
 }
 
-const formatDate = (date: string) => {
-  return dayjs(date).format('YYYY-MM-DD HH:mm')
+const formatDate = (date: string | null) => {
+  return date ? dayjs(date).format('YYYY-MM-DD HH:mm') : ''
 }
 
 const getTimeToReport = (issue: Issue) => {
+  if (!issue.startTimestamp || !issue.reportTimestamp) return ''
   const start = dayjs(issue.startTimestamp)
   const report = dayjs(issue.reportTimestamp)
   return report.from(start, true)
 }
 
 const getTimeToResolve = (issue: Issue) => {
-  if (!issue.resolutionTimestamp) return 'Unresolved'
+  if (!issue.startTimestamp || !issue.resolutionTimestamp) return 'Unresolved'
   const start = dayjs(issue.startTimestamp)
   const resolution = dayjs(issue.resolutionTimestamp)
   return resolution.from(start, true)
@@ -231,10 +277,7 @@ const viewDetails = (issue: Issue) => {
 
 const confirmExport = async () => {
   const { valid } = await exportForm.value?.validate()
-  
-  if (!valid) {
-    return
-  }
+  if (!valid) return
 
   try {
     const response = await $fetch<string>('/api/issues/export', {
@@ -246,13 +289,15 @@ const confirmExport = async () => {
       } as ExportOptions
     })
     
-    // Handle the export response (download file)
-    const blob = new Blob([response], { type: exportFormat.value === 'csv' ? 'text/csv' : 'application/json' })
+    const blob = new Blob([response], { 
+      type: exportFormat.value === 'csv' ? 'text/csv' : 'application/json' 
+    })
     const url = window.URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
     a.download = `issues-export-${dayjs().format('YYYY-MM-DD')}.${exportFormat.value}`
     a.click()
+    window.URL.revokeObjectURL(url)
     
     showExportDialog.value = false
   } catch (error) {
@@ -274,3 +319,16 @@ onMounted(async () => {
   }
 })
 </script>
+
+<style scoped>
+.status-open { color: var(--v-warning-base); }
+.status-investigating { color: var(--v-info-base); }
+.status-mitigated { color: var(--v-success-lighten1); }
+.status-resolved { color: var(--v-success-base); }
+.status-closed { color: var(--v-grey-base); }
+
+.severity-critical { color: var(--v-error-darken1); }
+.severity-high { color: var(--v-error-base); }
+.severity-medium { color: var(--v-warning-base); }
+.severity-low { color: var(--v-success-base); }
+</style>
