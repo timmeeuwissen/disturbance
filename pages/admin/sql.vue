@@ -12,14 +12,32 @@ v-container(fluid)
 
   v-row
     v-col(cols="12")
-      Suspense
-        template(#default)
-          admin-erd-diagram
-        template(#fallback)
-          v-card(variant="outlined")
-            v-card-text.d-flex.align-center.justify-center.py-8
-              v-progress-circular(indeterminate color="warning")
-              span.ml-2 Loading schema diagram...
+      v-card(variant="outlined")
+        v-card-title
+          span Database Schema
+          v-spacer
+          v-btn(
+            icon="mdi-chevron-up"
+            variant="text"
+            v-if="!schemaCollapsed"
+            @click="schemaCollapsed = true"
+          )
+          v-btn(
+            icon="mdi-chevron-down"
+            variant="text"
+            v-else
+            @click="schemaCollapsed = false"
+          )
+        v-expand-transition
+          v-card-text(v-show="!schemaCollapsed")
+            ClientOnly
+              Suspense
+                template(#default)
+                  admin-erd-diagram(v-if="!schemaCollapsed")
+                template(#fallback)
+                  .d-flex.align-center.justify-center.py-8
+                    v-progress-circular(indeterminate color="warning")
+                    span.ml-2 Loading schema diagram...
 
   v-row
     v-col(cols="12")
@@ -41,16 +59,18 @@ v-container(fluid)
           )
         v-expand-transition
           v-card-text(v-show="!editorCollapsed")
-            Suspense
-              template(#default)
-                admin-sql-editor(
-                  ref="sqlEditor"
-                  @query-results="handleQueryResults"
-                )
-              template(#fallback)
-                .d-flex.align-center.justify-center.py-8
-                  v-progress-circular(indeterminate color="warning")
-                  span.ml-2 Loading SQL editor...
+            ClientOnly
+              Suspense
+                template(#default)
+                  admin-sql-editor(
+                    v-if="!editorCollapsed"
+                    ref="sqlEditor"
+                    @query-results="handleQueryResults"
+                  )
+                template(#fallback)
+                  .d-flex.align-center.justify-center.py-8
+                    v-progress-circular(indeterminate color="warning")
+                    span.ml-2 Loading SQL editor...
 
   v-row(v-if="queryResult")
     v-col(cols="12")
@@ -90,19 +110,65 @@ v-container(fluid)
 </template>
 
 <script setup lang="ts">
-import { ref, defineAsyncComponent } from 'vue'
+import { ref, defineAsyncComponent, h, inject } from 'vue'
 import type { SqlQueryResult } from '~/types'
 
-// Lazy load components
-const AdminErdDiagram = defineAsyncComponent(() => 
-  import('~/components/admin/ErdDiagram.vue')
-)
-const AdminSqlEditor = defineAsyncComponent(() => 
-  import('~/components/admin/SqlEditor.vue')
-)
+// Create error component factory
+const createErrorComponent = (componentName: string) => ({
+  name: 'ErrorComponent',
+  emits: ['retry'],
+  setup() {
+    return () => h('div', { class: 'error-state pa-4 text-center' }, [
+      h('v-icon', { icon: 'mdi-alert', color: 'error', size: 'large' }),
+      h('p', { class: 'text-error mt-2' }, `Failed to load ${componentName}`),
+      h('v-btn', {
+        color: 'error',
+        variant: 'text',
+        onClick: () => {
+          const showMessage = inject<(text: string, color?: 'success' | 'error') => void>('showMessage')
+          showMessage?.(`Retrying to load ${componentName}...`, 'error')
+        }
+      }, 'Retry')
+    ])
+  }
+})
+
+// Lazy load components with error handling
+const AdminErdDiagram = defineAsyncComponent({
+  loader: () => import('~/components/admin/ErdDiagram.vue'),
+  loadingComponent: undefined,
+  errorComponent: createErrorComponent('schema diagram'),
+  timeout: 10000,
+  onError(error, retry, fail, attempts) {
+    if (attempts <= 3) {
+      retry()
+    } else {
+      const showMessage = inject<(text: string, color?: 'success' | 'error') => void>('showMessage')
+      showMessage?.('Failed to load schema diagram after multiple attempts.', 'error')
+      fail()
+    }
+  }
+})
+
+const AdminSqlEditor = defineAsyncComponent({
+  loader: () => import('~/components/admin/SqlEditor.vue'),
+  loadingComponent: undefined,
+  errorComponent: createErrorComponent('SQL editor'),
+  timeout: 10000,
+  onError(error, retry, fail, attempts) {
+    if (attempts <= 3) {
+      retry()
+    } else {
+      const showMessage = inject<(text: string, color?: 'success' | 'error') => void>('showMessage')
+      showMessage?.('Failed to load SQL editor after multiple attempts.', 'error')
+      fail()
+    }
+  }
+})
 
 // State
-const editorCollapsed = ref(false)
+const schemaCollapsed = ref(true)
+const editorCollapsed = ref(true)
 const resultsCollapsed = ref(false)
 const sqlEditor = ref<any>(null)
 const queryResult = ref<SqlQueryResult | null>(null)
@@ -142,8 +208,8 @@ const downloadResults = () => {
 }
 
 // Error handling for async components
-onErrorCaptured((error) => {
-  console.error('Error in SQL admin page:', error)
+onErrorCaptured((error, instance, info) => {
+  console.error('Error in SQL admin page:', { error, instance, info })
   const showMessage = inject<(text: string, color?: 'success' | 'error') => void>('showMessage')
   showMessage?.('Error loading component. Please try refreshing the page.', 'error')
   return false
@@ -153,5 +219,10 @@ onErrorCaptured((error) => {
 <style scoped>
 .v-card-text {
   position: relative;
+}
+
+.error-state {
+  background-color: var(--v-error-lighten4);
+  border-radius: 4px;
 }
 </style>

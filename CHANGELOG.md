@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 ## [2025-01-16]
 
+- Improved SQL admin page performance by adding lazy loading for components, optimized Monaco editor and ERD diagram initialization
+
+## [2025-01-16]
+
 - Split enumerations into separate tables (severities, statuses, reference_types), added isFinal flag to statuses, improved type safety across components
 
 ## [2025-01-16]
