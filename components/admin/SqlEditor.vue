@@ -1,31 +1,12 @@
 <template lang="pug">
-v-card
-  v-card-title SQL Query Editor
-  v-card-text
-    div(ref="editorContainer" style="height: 300px; border: 1px solid #ccc")
-    v-btn.mt-4(
-      color="warning"
-      prepend-icon="mdi-play"
-      @click="executeQuery"
-      :loading="loading"
-    ) Execute Query
-
-  v-card-text(v-if="result")
-    v-data-table(
-      :headers="headers"
-      :items="result.rows"
-      :items-per-page="10"
-      class="elevation-1"
-    )
-      template(#bottom)
-        .d-flex.align-center.justify-space-between.pa-4
-          span Total rows: {{ result.rowCount }}
-          v-btn(
-            color="warning"
-            prepend-icon="mdi-download"
-            @click="downloadResults"
-            :disabled="!result.rows.length"
-          ) Export Results
+div
+  div(ref="editorContainer" style="height: 300px; border: 1px solid #ccc")
+  v-btn.mt-4(
+    color="warning"
+    prepend-icon="mdi-play"
+    @click="executeQuery"
+    :loading="loading"
+  ) Execute Query
 </template>
 
 <script setup lang="ts">
@@ -35,9 +16,11 @@ import type { SqlQueryResult } from '~/types'
 
 const editorContainer = ref<HTMLElement | null>(null)
 const loading = ref(false)
-const result = ref<SqlQueryResult | null>(null)
 const editor = ref<any>(null)
-const headers = ref<any[]>([])
+
+const emit = defineEmits<{
+  (e: 'query-results', result: SqlQueryResult): void
+}>()
 
 // Initialize Monaco editor
 onMounted(async () => {
@@ -50,8 +33,47 @@ onMounted(async () => {
     language: 'sql',
     theme: 'vs',
     minimap: { enabled: false },
-    automaticLayout: true
+    automaticLayout: true,
+    quickSuggestions: {
+      other: true,
+      comments: true,
+      strings: true
+    },
+    suggest: {
+      showWords: true,
+      showSnippets: true
+    }
   })
+
+  // Add SQL keywords for autocomplete
+  monaco.languages.registerCompletionItemProvider('sql', {
+    provideCompletionItems: (model, position) => {
+      const word = model.getWordUntilPosition(position);
+      const range = {
+        startLineNumber: position.lineNumber,
+        endLineNumber: position.lineNumber,
+        startColumn: word.startColumn,
+        endColumn: word.endColumn
+      };
+
+      return {
+        suggestions: [
+          ...['SELECT', 'FROM', 'WHERE', 'GROUP BY', 'ORDER BY', 'LIMIT', 'JOIN', 'LEFT JOIN', 'INNER JOIN'].map(keyword => ({
+            label: keyword,
+            kind: monaco.languages.CompletionItemKind.Keyword,
+            insertText: keyword,
+            range
+          })),
+          ...['issues', 'communication_logs', 'issue_references', 'impacted_systems', 'involved_teams', 'tags', 'issue_tags', 'enumerations'].map(table => ({
+            label: table,
+            kind: monaco.languages.CompletionItemKind.Class,
+            insertText: table,
+            range
+          }))
+        ]
+      };
+    }
+  });
 })
 
 // Clean up editor on component unmount
@@ -72,14 +94,7 @@ const executeQuery = async () => {
       body: { query }
     })
     
-    result.value = response
-    if (response.columns) {
-      headers.value = response.columns.map(col => ({
-        title: col,
-        key: col,
-        sortable: true
-      }))
-    }
+    emit('query-results', response)
   } catch (error: any) {
     const showMessage = inject<(text: string, color?: 'success' | 'error') => void>('showMessage')
     showMessage?.(error.message || 'Error executing query', 'error')
@@ -88,24 +103,14 @@ const executeQuery = async () => {
   }
 }
 
-const downloadResults = () => {
-  if (!result.value?.rows.length) return
-
-  // Create CSV content
-  const csvContent = [
-    headers.value.map(h => h.title).join(','),
-    ...result.value.rows.map(row => 
-      headers.value.map(h => JSON.stringify(row[h.key])).join(',')
-    )
-  ].join('\n')
-
-  // Create and trigger download
-  const blob = new Blob([csvContent], { type: 'text/csv' })
-  const url = window.URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = `query-results-${new Date().toISOString()}.csv`
-  a.click()
-  window.URL.revokeObjectURL(url)
-}
+// Expose method for parent component
+defineExpose({
+  executeQuery
+})
 </script>
+
+<style scoped>
+:deep(.monaco-editor) {
+  border-radius: 4px;
+}
+</style>

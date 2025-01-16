@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 ## [2025-01-16]
 
+- Fixed schema parsing to generate valid Mermaid ERD syntax
+
+## [2025-01-16]
+
 - Fixed ERD diagram generation with proper Mermaid syntax and improved schema parsing
 
 ## [2025-01-16]
