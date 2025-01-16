@@ -3,7 +3,9 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   
   modules: [
-    '@pinia/nuxt',
+    ['@pinia/nuxt', {
+      autoImports: ['defineStore', 'storeToRefs']
+    }],
     '@pinia-plugin-persistedstate/nuxt',
     async (options, nuxt) => {
       nuxt.hooks.hook('vite:extendConfig', async config => {
@@ -60,6 +62,10 @@ export default defineNuxtConfig({
 
   imports: {
     dirs: ['stores']
+  },
+
+  typescript: {
+    strict: true
   },
 
   compatibilityDate: '2025-01-15'

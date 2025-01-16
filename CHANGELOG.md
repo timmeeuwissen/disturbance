@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 ## [2025-01-16]
 
+- Migrated admin state management to Pinia:n- Added Pinia store for admin staten- Updated useAdmin composable to use Pinia storen- Added persistence for admin staten- Improved index page with conditional admin section
+
+## [2025-01-16]
+
 - Fixed SQL admin page performance issues:n- Added proper lazy loading for heavy componentsn- Improved error handling and retry logicn- Added loading states and error boundariesn- Fixed component initialization issues
 
 ## [2025-01-16]

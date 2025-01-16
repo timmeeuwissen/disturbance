@@ -20,6 +20,7 @@
     "mermaid": "^11.4.1",
     "monaco-editor": "^0.52.2",
     "nuxt": "^3.15.1",
+    "pinia": "^2.3.0",
     "pug": "^3.0.3",
     "pug-loader": "^2.4.0",
     "sass-loader": "^16.0.4",
