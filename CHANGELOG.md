@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 ## [2025-01-16]
 
+- Updated Vuetify configuration to work with client-side rendering
+
+## [2025-01-16]
+
 - Added Vuetify, Sass, and Vite plugin for Vuetify
 
 ## [2025-01-16]

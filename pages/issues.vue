@@ -45,13 +45,7 @@ v-card
         v-select(
           v-model="filters.timeRange"
           label="Time Range"
-          :items="[
-            { value: 'all', title: 'All Time' },
-            { value: 'today', title: 'Today' },
-            { value: 'week', title: 'This Week' },
-            { value: 'month', title: 'This Month' },
-            { value: 'quarter', title: 'This Quarter' }
-          ]"
+          :items="[{ value: 'all', title: 'All Time' }, { value: 'today', title: 'Today' }, { value: 'week', title: 'This Week' }, { value: 'month', title: 'This Month' }, { value: 'quarter', title: 'This Quarter' }]"
           item-title="title"
           item-value="value"
           hide-details
@@ -107,10 +101,7 @@ v-card
           v-select(
             v-model="exportFormat"
             label="Format"
-            :items="[
-              { value: 'csv', title: 'CSV' },
-              { value: 'json', title: 'JSON' }
-            ]"
+            :items="[{ value: 'csv', title: 'CSV' }, { value: 'json', title: 'JSON' }]"
             item-title="title"
             item-value="value"
             required
@@ -118,11 +109,7 @@ v-card
           v-select(
             v-model="exportTemplate"
             label="Template"
-            :items="[
-              { value: 'full', title: 'Full Details' },
-              { value: 'summary', title: 'Summary' },
-              { value: 'metrics', title: 'Metrics Only' }
-            ]"
+            :items="[{ value: 'full', title: 'Full Details' }, { value: 'summary', title: 'Summary' }, { value: 'metrics', title: 'Metrics Only' }]"
             item-title="title"
             item-value="value"
             required
