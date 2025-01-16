@@ -61,6 +61,56 @@ CREATE TABLE IF NOT EXISTS involved_teams (
     FOREIGN KEY (issue_id) REFERENCES issues(id) ON DELETE CASCADE
 );
 
+-- Tags table for issue categorization
+CREATE TABLE IF NOT EXISTS tags (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL UNIQUE,
+    definition TEXT NOT NULL,
+    description TEXT,
+    color_primary TEXT NOT NULL DEFAULT '#FF9800',
+    color_secondary TEXT NOT NULL DEFAULT '#FFB74D',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Issue tags junction table
+CREATE TABLE IF NOT EXISTS issue_tags (
+    issue_id INTEGER NOT NULL,
+    tag_id INTEGER NOT NULL,
+    PRIMARY KEY (issue_id, tag_id),
+    FOREIGN KEY (issue_id) REFERENCES issues(id) ON DELETE CASCADE,
+    FOREIGN KEY (tag_id) REFERENCES tags(id) ON DELETE CASCADE
+);
+
+-- Enumerations table for system lists
+CREATE TABLE IF NOT EXISTS enumerations (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    category TEXT NOT NULL,
+    value TEXT NOT NULL,
+    description TEXT,
+    sort_order INTEGER NOT NULL DEFAULT 0,
+    is_active BOOLEAN NOT NULL DEFAULT 1,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(category, value)
+);
+
+-- Initial enumeration data
+INSERT OR IGNORE INTO enumerations (category, value, description, sort_order) VALUES
+    ('severity', 'critical', 'Critical severity level', 1),
+    ('severity', 'high', 'High severity level', 2),
+    ('severity', 'medium', 'Medium severity level', 3),
+    ('severity', 'low', 'Low severity level', 4),
+    ('status', 'open', 'Issue is open', 1),
+    ('status', 'investigating', 'Issue is being investigated', 2),
+    ('status', 'mitigated', 'Issue has been mitigated', 3),
+    ('status', 'resolved', 'Issue has been resolved', 4),
+    ('status', 'closed', 'Issue is closed', 5),
+    ('reference_type', 'jira', 'Jira reference', 1),
+    ('reference_type', 'slack', 'Slack reference', 2),
+    ('reference_type', 'system', 'System reference', 3),
+    ('reference_type', 'other', 'Other reference type', 4);
+
 -- Create indexes for better query performance
 CREATE INDEX IF NOT EXISTS idx_issues_status ON issues(status);
 CREATE INDEX IF NOT EXISTS idx_issues_severity ON issues(severity);
@@ -68,3 +118,7 @@ CREATE INDEX IF NOT EXISTS idx_issues_topic ON issues(topic);
 CREATE INDEX IF NOT EXISTS idx_issues_timestamps ON issues(start_timestamp, report_timestamp, resolution_timestamp);
 CREATE INDEX IF NOT EXISTS idx_communication_logs_datetime ON communication_logs(datetime);
 CREATE INDEX IF NOT EXISTS idx_communication_logs_issue ON communication_logs(issue_id);
+CREATE INDEX IF NOT EXISTS idx_issue_tags_issue ON issue_tags(issue_id);
+CREATE INDEX IF NOT EXISTS idx_issue_tags_tag ON issue_tags(tag_id);
+CREATE INDEX IF NOT EXISTS idx_enumerations_category ON enumerations(category);
+CREATE INDEX IF NOT EXISTS idx_enumerations_active ON enumerations(is_active);

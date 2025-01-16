@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 ## [2025-01-16]
 
+- Made report timestamp immutable and automatically set to current time when creating new issues
+
+## [2025-01-16]
+
 - Added communication logs section and made timestamps optional except when status is resolved
 
 ## [2025-01-16]

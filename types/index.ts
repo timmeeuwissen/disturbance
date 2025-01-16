@@ -1,24 +1,3 @@
-export interface Issue {
-  id: number
-  title: string
-  description?: string
-  reporter: string
-  registrar: string
-  severity: 'critical' | 'high' | 'medium' | 'low'
-  status: 'open' | 'investigating' | 'mitigated' | 'resolved' | 'closed'
-  topic: string
-  startTimestamp?: string
-  reportTimestamp?: string
-  resolutionTimestamp?: string
-  mitigationSteps?: string
-  createdAt: string
-  updatedAt: string
-  references?: Reference[]
-  impactedSystems?: ImpactedSystem[]
-  involvedTeams?: InvolvedTeam[]
-  communicationLogs?: CommunicationLog[]
-}
-
 export interface CommunicationLog {
   id: number
   issueId: number
@@ -63,4 +42,60 @@ export interface ExportOptions {
   format: 'csv' | 'json'
   template: 'full' | 'summary' | 'metrics'
   filters: IssueFilters
+}
+
+export interface Tag {
+  id: number
+  name: string
+  definition: string
+  description?: string
+  colorPrimary: string
+  colorSecondary: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface Enumeration {
+  id: number
+  category: string
+  value: string
+  description?: string
+  sortOrder: number
+  isActive: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+export interface AdminState {
+  isAdmin: boolean
+}
+
+export interface SqlQueryResult {
+  columns: string[]
+  rows: any[]
+  rowCount: number
+  error?: string
+}
+
+// Update Issue interface to include tags
+export interface Issue {
+  id: number
+  title: string
+  description?: string
+  reporter: string
+  registrar: string
+  severity: 'critical' | 'high' | 'medium' | 'low'
+  status: 'open' | 'investigating' | 'mitigated' | 'resolved' | 'closed'
+  topic: string
+  startTimestamp?: string
+  reportTimestamp?: string
+  resolutionTimestamp?: string
+  mitigationSteps?: string
+  createdAt: string
+  updatedAt: string
+  references?: Reference[]
+  impactedSystems?: ImpactedSystem[]
+  involvedTeams?: InvolvedTeam[]
+  communicationLogs?: CommunicationLog[]
+  tags?: Tag[]
 }
