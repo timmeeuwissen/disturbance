@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 ## [2025-01-16]
 
+- Expanded sample data:n- Tripled the amount of list itemsn- Added more varied statuses and severitiesn- Added more reference types and tagsn- Added diverse issue scenarios with relationships
+
+## [2025-01-16]
+
 - Added database fixtures and reset functionality:n- Added sample data fixtures for all tablesn- Added script to load fixturesn- Added script to reset database with confirmationn- Added make targets for database management
 
 ## [2025-01-16]
