@@ -10,6 +10,8 @@ A system for tracking and analyzing system outages and incidents.
 - Export incident data in various formats
 - Analytics dashboard with key metrics
 - Detailed incident history and timeline
+- Admin mode with database management and system configuration
+- Tag-based incident categorization
 
 ## Setup
 
@@ -32,12 +34,14 @@ The application will be available at http://localhost:3000
 
 ## Project Structure
 
-- `/pages` - Frontend pages (New Issue, Issues Overview, Analytics)
+- `/pages` - Frontend pages (New Issue, Issues Overview, Analytics, Admin)
 - `/server` - Backend API and database services
 - `/db` - Database schema and migrations
 - `/types` - TypeScript type definitions
 - `/assets` - Styles and other assets
 - `/scripts` - Utility scripts for development
+- `/components` - Reusable Vue components
+- `/composables` - Vue composables for shared logic
 
 ## Database Schema
 
@@ -57,6 +61,42 @@ The application will be available at http://localhost:3000
 ### Involved Teams Table
 - Teams working on incident resolution
 - Team roles and responsibilities
+
+### Communication Logs Table
+- Timeline of communications during incidents
+- Internal and external communication tracking
+- Links to communication sources
+
+### Tags Table
+- Custom incident categorization
+- Color-coded tags with definitions
+- Many-to-many relationship with issues
+
+### Enumerations Table
+- System-wide lists management
+- Configurable values for dropdowns
+- Categories: severity, status, reference types
+
+## Admin Features
+
+### SQL Administration
+- Real-time database schema visualization (ERD)
+- SQL query editor with syntax highlighting
+- Query results in sortable table format
+- Export query results to CSV
+- Read-only access (destructive queries prevented)
+
+### Lists Management
+- Manage system-wide enumerations
+- Configure dropdown options for forms
+- Active/inactive status control
+- Sort order customization
+
+### Tag Management
+- Create and edit issue tags
+- Define tag meanings and descriptions
+- Customize tag colors
+- Visual preview of tag appearance
 
 ## Available Commands
 
@@ -86,6 +126,9 @@ Export issues in CSV or JSON format with different templates:
 - Full details
 - Summary view
 - Metrics only
+
+### POST /api/admin/sql
+Execute read-only SQL queries (admin only)
 
 ## Contributing
 

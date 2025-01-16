@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 ## [2025-01-16]
 
+- Added admin pages for SQL database management and system lists configuration
+
+## [2025-01-16]
+
 - Added SQLite3 dependency for database operations
 
 ## [2025-01-16]
