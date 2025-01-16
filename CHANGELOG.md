@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 ## [2025-01-16]
 
+- Added detailed record counts:n- Added record counts by table categoryn- Added color-coded output for better readabilityn- Added counts to both load-fixtures and reset-db scriptsn- Added final record summary after database operations
+
+## [2025-01-16]
+
 - Expanded sample data:n- Tripled the amount of list itemsn- Added more varied statuses and severitiesn- Added more reference types and tagsn- Added diverse issue scenarios with relationships
 
 ## [2025-01-16]

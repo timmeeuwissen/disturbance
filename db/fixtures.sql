@@ -1,3 +1,14 @@
+-- First, delete any existing data
+DELETE FROM issue_tags;
+DELETE FROM tags;
+DELETE FROM involved_teams;
+DELETE FROM impacted_systems;
+DELETE FROM issue_references;
+DELETE FROM issues;
+DELETE FROM reference_types;
+DELETE FROM severities;
+DELETE FROM statuses;
+
 -- Sample Statuses
 INSERT INTO statuses (name, is_final, is_default, sort_order) VALUES
   ('New', 0, 1, 0),
@@ -51,6 +62,34 @@ INSERT INTO reference_types (name, is_default, sort_order) VALUES
   ('Asana', 0, 12),
   ('Google Doc', 0, 13),
   ('Zendesk', 0, 14);
+
+-- Sample Tags (with unique names)
+INSERT INTO tags (name) VALUES
+  ('infrastructure'),
+  ('database'),
+  ('performance'),
+  ('security'),
+  ('urgent'),
+  ('network'),
+  ('compliance'),
+  ('monitoring'),
+  ('customer-impact'),
+  ('maintenance'),
+  ('hardware'),
+  ('software'),
+  ('configuration'),
+  ('authentication'),
+  ('availability'),
+  ('storage'),
+  ('backup'),
+  ('data-protection'),
+  ('payment'),
+  ('cache'),
+  ('load-balancer'),
+  ('alert-system'),
+  ('capacity'),
+  ('failover'),
+  ('latency');
 
 -- Sample Issues
 INSERT INTO issues (
@@ -452,84 +491,60 @@ INSERT INTO involved_teams (issue_id, team_name, role) VALUES
   (15, 'Infrastructure Team', 'Support'),
   (15, 'Security Team', 'Support');
 
--- Sample Tags
-INSERT INTO tags (name) VALUES
-  ('infrastructure'),
-  ('database'),
-  ('performance'),
-  ('security'),
-  ('urgent'),
-  ('network'),
-  ('compliance'),
-  ('monitoring'),
-  ('customer-impact'),
-  ('maintenance'),
-  ('hardware'),
-  ('software'),
-  ('configuration'),
-  ('authentication'),
-  ('availability'),
-  ('storage'),
-  ('backup'),
-  ('data-protection'),
-  ('payment'),
-  ('cache'),
-  ('load-balancer'),
-  ('alert-system'),
-  ('capacity'),
-  ('failover'),
-  ('latency');
-
--- Sample Issue Tags
+-- Sample Issue Tags (ensuring unique combinations)
 INSERT INTO issue_tags (issue_id, tag_id) VALUES
-  -- Infrastructure Issues Tags
+  -- Infrastructure Issues Tags (1-3)
   (1, 1), -- infrastructure
   (1, 2), -- database
   (1, 9), -- customer-impact
-  (2, 1), -- infrastructure
   (2, 3), -- performance
   (2, 5), -- urgent
+  (2, 6), -- network
   (3, 4), -- security
   (3, 10), -- maintenance
-  -- Security Issues Tags
+  (3, 13), -- configuration
+  -- Security Issues Tags (4-5)
   (4, 4), -- security
-  (4, 5), -- urgent
   (4, 14), -- authentication
+  (4, 5), -- urgent
   (5, 4), -- security
   (5, 7), -- compliance
-  -- Performance Issues Tags
+  (5, 8), -- monitoring
+  -- Performance Issues Tags (6-7)
   (6, 3), -- performance
   (6, 8), -- monitoring
   (6, 12), -- software
-  (7, 3), -- performance
   (7, 11), -- hardware
-  -- Network Issues Tags
-  (8, 1), -- infrastructure
+  (7, 13), -- configuration
+  (7, 15), -- availability
+  -- Network Issues Tags (8-9)
   (8, 6), -- network
   (8, 15), -- availability
+  (8, 9), -- customer-impact
   (9, 6), -- network
   (9, 13), -- configuration
-  -- Storage Issues Tags
+  (9, 8), -- monitoring
+  -- Storage Issues Tags (10)
   (10, 16), -- storage
   (10, 23), -- capacity
   (10, 5), -- urgent
-  -- Backup Issues Tags
+  -- Backup Issues Tags (11)
   (11, 17), -- backup
   (11, 18), -- data-protection
-  (11, 8), -- monitoring
-  -- Application Issues Tags
+  (11, 16), -- storage
+  -- Application Issues Tags (12)
   (12, 19), -- payment
-  (12, 9), -- customer-impact
   (12, 25), -- latency
-  -- Monitoring Issues Tags
+  (12, 3), -- performance
+  -- Monitoring Issues Tags (13)
   (13, 22), -- alert-system
   (13, 8), -- monitoring
   (13, 5), -- urgent
-  -- Cache Issues Tags
+  -- Cache Issues Tags (14)
   (14, 20), -- cache
   (14, 3), -- performance
   (14, 12), -- software
-  -- Load Balancer Issues Tags
+  -- Load Balancer Issues Tags (15)
   (15, 21), -- load-balancer
   (15, 24), -- failover
-  (15, 15); -- availability
+  (15, 1); -- infrastructure
